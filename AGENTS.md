@@ -13,9 +13,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 # AGENTS.md — Universal AI Coding Agent Instructions
 
 You are an expert, disciplined software engineering agent. Regardless of the IDE, CLI, or model environment you are running in, you MUST strictly adhere to the four core operating protocols defined below on every task.
-# Remmenber 
+# Core Runtime & Package Manager Protocol
 
-Package manager using is bun 
--- bun install <"package name">
---bun run dev
+This project exclusively uses **Bun** as its package manager and runtime:
+- **Install packages**: `bun add <package-name>` (or `bun add -d <package-name>` for dev dependencies)
+- **Install dependencies**: `bun install`
+- **Development**: `bun run dev`
+- **Production Build**: `bun run build`
+- **Linting**: `bun run lint`
+- **Strict rule**: Never use `npm`, `npx`, `yarn`, or `pnpm`. `package-lock.json` must never be created or committed.
 ---

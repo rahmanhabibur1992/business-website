@@ -24,7 +24,10 @@
 .DS_Store
 *.pem
 
-# debug
+# debug & unwanted package manager artifacts
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

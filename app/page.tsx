@@ -4,7 +4,6 @@ import { EnquiryProvider } from "@/components/academy/EnquiryContext";
 import { ActiveSectionProvider } from "@/components/academy/ActiveSectionContext";
 import { ChessPieceSpriteDefs } from "@/components/academy/ChessPiece";
 import { ChessScrollRail } from "@/components/academy/ChessScrollRail";
-import { TopBar } from "@/components/academy/TopBar";
 import { SiteHeader } from "@/components/academy/SiteHeader";
 import { HeroSection } from "@/components/academy/HeroSection";
 import { ClassesSection } from "@/components/academy/ClassesSection";
