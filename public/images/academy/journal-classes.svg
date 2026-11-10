@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <defs>
+    <radialGradient id="c-bg" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#161820" />
+      <stop offset="100%" stop-color="#080a0f" />
+    </radialGradient>
+    <linearGradient id="gold-c" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f2ca50" />
+      <stop offset="100%" stop-color="#e1c46e" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" fill="url(#c-bg)" />
+  <!-- Blackboard / Demonstration Board Grid -->
+  <g transform="translate(160, 60)">
+    <rect width="280" height="240" rx="8" fill="#111319" stroke="#2f3240" stroke-width="2" />
+    <!-- 4x4 Mini diagram -->
+    <g stroke="#2f3240" stroke-width="1">
+      <line x1="70" y1="0" x2="70" y2="240" />
+      <line x1="140" y1="0" x2="140" y2="240" />
+      <line x1="210" y1="0" x2="210" y2="240" />
+      <line x1="0" y1="60" x2="280" y2="60" />
+      <line x1="0" y1="120" x2="280" y2="120" />
+      <line x1="0" y1="180" x2="280" y2="180" />
+    </g>
+    <!-- Tactical Arrows -->
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#f2ca50" />
+      </marker>
+    </defs>
+    <path d="M 35 150 Q 105 90 175 90" fill="none" stroke="#f2ca50" stroke-width="3" stroke-dasharray="4 2" marker-end="url(#arrow)" />
+    <!-- Board Pieces Highlights -->
+    <circle cx="35" cy="150" r="18" fill="#1d2028" stroke="#f2ca50" stroke-width="2" />
+    <text x="35" y="156" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="16" fill="#f2ca50">♘</text>
+
+    <circle cx="175" cy="90" r="18" fill="#1d2028" stroke="#34D399" stroke-width="2" />
+    <text x="175" y="96" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="16" fill="#34D399">d5</text>
+
+    <circle cx="105" cy="210" r="16" fill="#272a34" stroke="#9ea3b5" stroke-width="1.5" />
+    <text x="105" y="216" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#e6e8f2">♙</text>
+
+    <circle cx="245" cy="30" r="16" fill="#272a34" stroke="#9ea3b5" stroke-width="1.5" />
+    <text x="245" y="36" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" fill="#e6e8f2">♚</text>
+  </g>
+  <text x="300" y="340" text-anchor="middle" font-family="'Space Grotesk', sans-serif" font-weight="600" font-size="14" fill="#e6e8f2" letter-spacing="1">TARTAKOWER QGD • PROPHYLACTIC MASTERCLASS</text>
+</svg>

@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // New collections for Rahman Chess Academy
+    match /site_content/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /classes/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /coaches/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /tournaments/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /gallery/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /testimonials/{document=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}
