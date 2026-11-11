@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AdminAuthProvider } from "@/lib/auth-context";
+import { WhatsAppFloatingButton } from "@/components/academy/WhatsAppFloatingButton";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -32,11 +33,11 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rahmanchess.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+  title: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
   description:
-    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Grandmaster apprenticeships. 100% Online.",
+    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Master apprenticeships. 100% Online.",
   openGraph: {
-    title: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+    title: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
     description:
       "Structured syllabi from basic pawn fundamentals to master-level prophylactic calculations. Personalized 1-on-1 coaching, weekend Blitz arena tournaments, and engine-augmented review. 100% Online.",
     siteName: "Rahman Chess Academy",
@@ -51,7 +52,7 @@ const orgJsonLd = {
   name: "Rahman Chess Academy",
   url: siteUrl,
   description:
-    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Grandmaster apprenticeships. 100% Online.",
+    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Master apprenticeships. 100% Online.",
   telephone: "+917200051588",
   areaServed: {
     "@type": "AdministrativeArea",
@@ -82,6 +83,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body antialiased selection:bg-primary selection:text-on-primary">
         <AdminAuthProvider>
           {children}
+          <WhatsAppFloatingButton />
         </AdminAuthProvider>
       </body>
     </html>

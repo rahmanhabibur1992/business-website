@@ -10,20 +10,19 @@ import React, {
 } from "react";
 
 export const TRACKED_SECTIONS = [
-  { id: "hero", rank: 1, name: "Rank 1: Academy Sanctuary (Hero)" },
+  { id: "hero", rank: 1, name: "Rank 1: Academy Sanctuary" },
   { id: "classes", rank: 2, name: "Rank 2: Structured Classes" },
-  { id: "coaches", rank: 3, name: "Rank 3: Grandmaster Faculty" },
+  { id: "coaches", rank: 3, name: "Rank 3: Master Faculty" },
   { id: "tournaments", rank: 4, name: "Rank 4: Tournament Circuit" },
-  { id: "gallery", rank: 5, name: "Rank 5: Dispatch & Gallery" },
-  { id: "journal", rank: 6, name: "Rank 6: Master Journal" },
-  { id: "testimonials", rank: 7, name: "Rank 7: Verified Reviews" },
-  { id: "cta-assessment", rank: 8, name: "Rank 8: Process & Assessment" },
+  { id: "gallery", rank: 5, name: "Rank 5: Academy Gallery" },
+  { id: "testimonials", rank: 6, name: "Rank 6: Verified Reviews" },
+  { id: "cta-assessment", rank: 7, name: "Rank 7: Process & Assessment" },
 ] as const;
 
 export type TrackedSectionId = (typeof TRACKED_SECTIONS)[number]["id"];
 
 interface ActiveSectionContextType {
-  activeRankIdx: number; // 0..7
+  activeRankIdx: number; // 0..6
   activeSectionId: TrackedSectionId;
   progressFraction: number; // 0..1
   isPromoted: boolean;
@@ -47,12 +46,13 @@ export function ActiveSectionProvider({ children }: { children: ReactNode }) {
   const [progressFraction, setProgressFraction] = useState(0);
   const [isPromoted, setIsPromoted] = useState(false);
 
+  const lastRankIndex = TRACKED_SECTIONS.length - 1;
+
   const scrollToSection = useCallback((id: string) => {
     const foundIdx = TRACKED_SECTIONS.findIndex((s) => s.id === id);
     if (foundIdx >= 0) {
       setActiveRankIdx(foundIdx);
-      if (foundIdx === 7) setIsPromoted(true);
-      else setIsPromoted(false);
+      setIsPromoted(foundIdx === lastRankIndex);
     }
 
     const el = document.getElementById(id);
@@ -66,16 +66,15 @@ export function ActiveSectionProvider({ children }: { children: ReactNode }) {
         block: "start",
       });
     }
-  }, []);
+  }, [lastRankIndex]);
 
   const setActiveSectionManually = useCallback((id: string) => {
     const foundIdx = TRACKED_SECTIONS.findIndex((s) => s.id === id);
     if (foundIdx >= 0) {
       setActiveRankIdx(foundIdx);
-      if (foundIdx === 7) setIsPromoted(true);
-      else setIsPromoted(false);
+      setIsPromoted(foundIdx === lastRankIndex);
     }
-  }, []);
+  }, [lastRankIndex]);
 
   useEffect(() => {
     let ticking = false;
@@ -104,7 +103,7 @@ export function ActiveSectionProvider({ children }: { children: ReactNode }) {
           // Only update state if active section index changed
           setActiveRankIdx((prev) => {
             if (prev !== currentIdx) {
-              setIsPromoted(currentIdx === 7);
+              setIsPromoted(currentIdx === lastRankIndex);
               return currentIdx;
             }
             return prev;
@@ -139,7 +138,7 @@ export function ActiveSectionProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("resize", handleScroll);
       clearTimeout(t);
     };
-  }, []);
+  }, [lastRankIndex]);
 
   const activeSectionId = TRACKED_SECTIONS[activeRankIdx]?.id || "hero";
   const isMobilePromoted = progressFraction >= 0.92;

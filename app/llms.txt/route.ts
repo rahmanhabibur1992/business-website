@@ -1,6 +1,8 @@
 import { getAllPublicContent } from "@/lib/content-service";
 import { SITE_CONTACT } from "@/lib/site-config";
 
+
+
 export async function GET() {
   const content = await getAllPublicContent();
 
@@ -8,7 +10,7 @@ export async function GET() {
     "# Rahman Chess Academy",
     "",
     "## Overview",
-    "Rahman Chess Academy is an elite online chess coaching academy providing structured Grandmaster mentorship and FIDE apprenticeship.",
+    "Rahman Chess Academy is an elite online chess coaching academy providing structured Master mentorship and FIDE apprenticeship.",
     "Rahman Chess Academy is 100% online, serving students across the world through live interactive cohorts and personalized calculation sessions.",
     "",
     "## Contact & Enrollment",
@@ -24,16 +26,15 @@ export async function GET() {
   for (const c of content.classes) {
     lines.push(`### ${c.title} (${c.level})`);
     lines.push(`- Target Rating: ${c.ratingLabel || c.ratingRange}`);
-    lines.push(`- Duration: ${c.duration} (${c.sessionLength} per session)`);
+    lines.push(`- Format: ${c.mode || "100% Online"}`);
     lines.push(`- Batch Size: ${c.batchSize}`);
-    lines.push(`- Schedule: ${c.schedule}`);
     lines.push(`- Description: ${c.description}`);
     lines.push(`- Modules: ${c.modules.join(", ")}`);
     if (c.perks) lines.push(`- Perks: ${c.perks}`);
     lines.push("");
   }
 
-  lines.push("## Grandmaster Faculty");
+  lines.push("## Master Faculty");
   for (const coach of content.coaches) {
     lines.push(`### ${coach.name}`);
     lines.push(`- Title & Role: ${coach.roleLine || coach.role}`);

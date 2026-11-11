@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -20,7 +20,7 @@ import {
   ClassTrack,
   CoachProfile,
   TournamentEvent,
-  JournalPost,
+  GalleryImage,
   TestimonialItem,
   SEED_HERO_TAGS,
   SEED_CLASSES_SECTION,
@@ -44,15 +44,20 @@ export default function AdminPage() {
   const [classes, setClasses] = useState<ClassTrack[]>([]);
   const [coaches, setCoaches] = useState<CoachProfile[]>([]);
   const [tournaments, setTournaments] = useState<TournamentEvent[]>([]);
-  const [gallery, setGallery] = useState<JournalPost[]>([]);
+  const [gallery, setGallery] = useState<GalleryImage[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialItem[]>([]);
 
   // Editing state for modals
   const [editingClass, setEditingClass] = useState<ClassTrack | null>(null);
   const [editingCoach, setEditingCoach] = useState<CoachProfile | null>(null);
   const [editingTournament, setEditingTournament] = useState<TournamentEvent | null>(null);
-  const [editingGallery, setEditingGallery] = useState<JournalPost | null>(null);
+  const [editingGallery, setEditingGallery] = useState<GalleryImage | null>(null);
   const [editingTestimonial, setEditingTestimonial] = useState<TestimonialItem | null>(null);
+
+  // Multi-upload state for Gallery
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState<string>("");
+  const galleryFileInputRef = React.useRef<HTMLInputElement>(null);
 
   // New item chip buffers
   const [moduleInput, setModuleInput] = useState("");
@@ -535,10 +540,20 @@ export default function AdminPage() {
   };
 
   // 5. GALLERY
-  const handleSaveGallery = async (item: JournalPost) => {
+  const handleSaveGallery = async (item: GalleryImage) => {
     setSaving(true);
     setFieldErrors({});
-    const parsed = GalleryItemSchema.safeParse(item);
+    const cleanItem = {
+      id: item.id,
+      imageUrl: item.imageUrl,
+      imagePublicId: item.imagePublicId || "",
+      width: item.width,
+      height: item.height,
+      imageAlt: item.imageAlt || "",
+      order: item.order ?? 0,
+      visible: item.visible !== false,
+    };
+    const parsed = GalleryItemSchema.safeParse(cleanItem);
     if (!parsed.success) {
       const errMap: Record<string, string> = {};
       parsed.error.issues.forEach((iss) => {
@@ -546,7 +561,7 @@ export default function AdminPage() {
       });
       setFieldErrors(errMap);
       setSaving(false);
-      showToast("Please fill in the gallery item fields.", "error");
+      showToast("Please check gallery photo fields.", "error");
       return;
     }
 
@@ -562,7 +577,7 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Failed");
-      showToast(`Gallery post "${parsed.data.title}" saved!`);
+      showToast("Gallery photo saved!");
       setEditingGallery(null);
       await fetchAllData();
     } catch (err: unknown) {
@@ -573,8 +588,8 @@ export default function AdminPage() {
     }
   };
 
-  const handleDeleteGallery = async (id: string, title: string) => {
-    if (!confirm(`Delete gallery post "${title}"?`)) return;
+  const handleDeleteGallery = async (id: string) => {
+    if (!confirm("Delete this gallery photo?")) return;
     setSaving(true);
     try {
       const token = await getIdToken();
@@ -584,13 +599,104 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (!res.ok || !json.success) throw new Error(json.error || "Delete failed");
-      showToast(`Gallery post "${title}" deleted.`);
+      showToast("Gallery photo deleted.");
       await fetchAllData();
     } catch (err: unknown) {
       const error = err as Error;
       showToast(error.message, "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleMultiUploadGallery = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const validTypes = ["image/jpeg", "image/png", "image/webp"];
+    const validFiles: File[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (validTypes.includes(f.type) && f.size <= 5 * 1024 * 1024) {
+        validFiles.push(f);
+      }
+    }
+
+    if (validFiles.length === 0) {
+      showToast("Please select valid JPG, PNG, or WebP images under 5 MB each.", "error");
+      return;
+    }
+
+    setUploadingGallery(true);
+    try {
+      const token = await getIdToken();
+      if (!token) throw new Error("Authentication required.");
+
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        setGalleryUploadProgress(`Uploading ${i + 1} of ${validFiles.length}...`);
+
+        const signRes = await fetch("/api/admin/cloudinary-sign", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ folderType: "gallery" }),
+        });
+        const signJson = await signRes.json();
+        if (!signRes.ok || !signJson.success) {
+          throw new Error(signJson.error || "Failed to sign upload");
+        }
+        const { signature, timestamp, apiKey, cloudName, folder } = signJson.data;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", String(timestamp));
+        formData.append("signature", signature);
+        formData.append("folder", folder);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: "POST",
+          body: formData,
+        });
+        const uploadJson = await uploadRes.json();
+        if (!uploadRes.ok) {
+          throw new Error(uploadJson.error?.message || "Upload failed");
+        }
+
+        const newItem: GalleryImage = {
+          id: `gallery-${Date.now()}-${i}`,
+          imageUrl: uploadJson.secure_url,
+          imagePublicId: uploadJson.public_id,
+          width: uploadJson.width,
+          height: uploadJson.height,
+          imageAlt: "",
+          order: gallery.length + 1 + i,
+          visible: true,
+        };
+
+        await fetch("/api/admin/gallery", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(newItem),
+        });
+      }
+
+      showToast(`Uploaded ${validFiles.length} photo(s) to gallery!`);
+      await fetchAllData();
+    } catch (err: unknown) {
+      const error = err as Error;
+      showToast(error.message, "error");
+    } finally {
+      setUploadingGallery(false);
+      setGalleryUploadProgress("");
+      if (galleryFileInputRef.current) galleryFileInputRef.current.value = "";
     }
   };
 
@@ -753,32 +859,6 @@ export default function AdminPage() {
 
       {/* Page Body */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-6">
-        {/* Friendly Non-Technical Welcome Banner */}
-        <div className="bg-surface border border-outline-subtle rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
-          <div className="space-y-1">
-            <h1 className="text-lg sm:text-xl font-bold text-on-surface flex items-center gap-2">
-              <span>👋</span>
-              <span>Website Content Manager</span>
-            </h1>
-            <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed max-w-2xl">
-              Easily update your online chess courses, coaches, tournaments, and reviews. Click any category tab below to make your changes, then click the green <strong>Save</strong> button.
-            </p>
-          </div>
-          <div className="shrink-0 bg-primary/10 border border-primary/30 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-primary">
-            <span>Need Help? WhatsApp Support: </span>
-            <a
-              href={SITE_CONTACT.whatsappChatUrl(
-                "Hello Rahman Chess Academy support, I need guidance with updating the website."
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold underline hover:text-secondary"
-            >
-              {SITE_CONTACT.phone}
-            </a>
-          </div>
-        </div>
-
         {/* Category Navigation Tabs */}
         <nav
           aria-label="Management Categories"
@@ -795,7 +875,7 @@ export default function AdminPage() {
             {
               id: "coaches",
               label: "Coaches",
-              subtitle: "Grandmasters & Faculty",
+              subtitle: "Master Faculty & Coaches",
               icon: "👨‍🏫",
               count: coaches.length,
             },
@@ -983,10 +1063,7 @@ export default function AdminPage() {
                           ratingLabel: "Club 1400 - 1800",
                           description:
                             "Comprehensive interactive coaching covering tactical precision, opening repertoire, and endgame mastery.",
-                          duration: "16 Weeks",
-                          sessionLength: "75 Mins",
                           batchSize: "Max 5 Students",
-                          schedule: "Mon & Fri 18:00 IST",
                           modules: ["Positional Play", "Tactics & Calculation", "Endgame Technique"],
                           perks: "Includes weekly homework sheets & Lichess sparring",
                           formKey: `program-${Date.now()}`,
@@ -1041,9 +1118,9 @@ export default function AdminPage() {
                             </div>
                             <p className="text-sm text-on-surface-variant line-clamp-2">{cls.description}</p>
                             <div className="flex items-center gap-4 text-xs sm:text-sm text-on-surface-variant/80 flex-wrap">
-                              <span>📅 Schedule: <strong className="text-on-surface">{cls.schedule}</strong></span>
                               <span>👥 Batch: <strong className="text-on-surface">{cls.batchSize}</strong></span>
-                              <span>⏱️ Duration: <strong className="text-on-surface">{cls.duration}</strong></span>
+                              <span>🌐 Mode: <strong className="text-on-surface">{cls.mode || "Online"}</strong></span>
+                              <span>🎯 Rating: <strong className="text-on-surface">{cls.ratingLabel || cls.ratingRange}</strong></span>
                             </div>
                           </div>
 
@@ -1252,46 +1329,14 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          {/* Schedule, Duration, Batch */}
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          {/* Batch Size & Delivery Mode */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Weekly Schedule *
+                                Cohort / Batch Size *
                               </label>
                               <p className="text-xs text-on-surface-variant mb-1.5">
-                                e.g. Mon & Wed 18:00 IST
-                              </p>
-                              <input
-                                type="text"
-                                value={editingClass.schedule}
-                                onChange={(e) =>
-                                  setEditingClass({ ...editingClass, schedule: e.target.value })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Total Course Duration
-                              </label>
-                              <p className="text-xs text-on-surface-variant mb-1.5">
-                                e.g. 12 Weeks or Ongoing
-                              </p>
-                              <input
-                                type="text"
-                                value={editingClass.duration}
-                                onChange={(e) =>
-                                  setEditingClass({ ...editingClass, duration: e.target.value })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Batch Size
-                              </label>
-                              <p className="text-xs text-on-surface-variant mb-1.5">
-                                e.g. Max 6 Students or 1-on-1
+                                e.g. Max 6 Students or 1-on-1 Mentorship
                               </p>
                               <input
                                 type="text"
@@ -1300,6 +1345,20 @@ export default function AdminPage() {
                                   setEditingClass({ ...editingClass, batchSize: e.target.value })
                                 }
                                 className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-semibold text-on-surface mb-1">
+                                Delivery Mode
+                              </label>
+                              <p className="text-xs text-on-surface-variant mb-1.5">
+                                Standard delivery mode
+                              </p>
+                              <input
+                                type="text"
+                                disabled
+                                value={editingClass.mode || "Online"}
+                                className="w-full bg-surface-low/50 border border-outline-subtle rounded-xl px-4 py-3 text-base text-on-surface-variant cursor-not-allowed"
                               />
                             </div>
                           </div>
@@ -1477,7 +1536,7 @@ export default function AdminPage() {
               )}
 
               {/* ========================================================= */}
-              {/* TAB 2: GRANDMASTERS & COACHES */}
+              {/* TAB 2: MASTER FACULTY & COACHES */}
               {/* ========================================================= */}
               {activeTab === "coaches" && (
                 <div className="space-y-6">
@@ -1486,10 +1545,10 @@ export default function AdminPage() {
                     <div>
                       <h2 className="text-xl sm:text-2xl font-bold text-on-surface flex items-center gap-2">
                         <span>👨‍🏫</span>
-                        <span>Grandmasters & Faculty</span>
+                        <span>Master Faculty & Coaches</span>
                       </h2>
                       <p className="text-sm text-on-surface-variant">
-                        Manage your academy coaches, titles, FIDE ratings, and photo portraits.
+                        Manage your academy coaches, ratings, and photo portraits.
                       </p>
                     </div>
                     <button
@@ -1497,14 +1556,14 @@ export default function AdminPage() {
                       onClick={() => {
                         const newCoach: CoachProfile = {
                           id: `coach-${Date.now()}`,
-                          name: "Grandmaster Coach",
-                          imageUrl: "/coaches/coach-levon.webp",
+                          name: "Levon Sarkisov",
+                          imageUrl: "/images/academy/coach-levon.svg",
                           imagePublicId: "coach-levon",
-                          imageAlt: "Grandmaster Coach teaching chess online",
-                          roleLine: "FIDE Senior Trainer • 15+ Years Experience",
-                          role: "FIDE Senior Trainer • 15+ Years Experience",
-                          peakRating: "PEAK 2650 FIDE",
-                          badge: "International GM",
+                          imageAlt: "Levon Sarkisov - Chess Coach",
+                          roleLine: "Senior Trainer • 15+ Years Experience",
+                          role: "Senior Trainer • 15+ Years Experience",
+                          peakRating: "PEAK 2650",
+                          badge: "Master Coach",
                           bio: "Dedicated master instructor specializing in tactical mastery, dynamic attacking principles, and personalized student development.",
                           specialties: ["Attacking Chess", "Endgame Technique", "Repertoire Building"],
                           order: coaches.length + 1,
@@ -1731,7 +1790,7 @@ export default function AdminPage() {
                               </label>
                               <input
                                 type="text"
-                                placeholder="e.g. Super GM, Former National Champion"
+                                placeholder="e.g. Master Coach, Former National Champion"
                                 value={editingCoach.badge || ""}
                                 onChange={(e) =>
                                   setEditingCoach({ ...editingCoach, badge: e.target.value })
@@ -1918,9 +1977,8 @@ export default function AdminPage() {
                           format: "Blitz (Swiss 7 Rounds)",
                           timeControl: "3 min + 2 sec inc",
                           dayTime: "Every Sunday, 19:30 IST",
-                          ctaType: "link",
-                          ctaLabel: "Join on Lichess",
-                          ctaUrl: "https://lichess.org",
+                          ctaLabel: "",
+                          ctaUrl: "",
                           order: tournaments.length + 1,
                           visible: true,
                         };
@@ -1966,6 +2024,15 @@ export default function AdminPage() {
                               ) : (
                                 <span className="px-2.5 py-0.5 rounded-full bg-chess-success/15 border border-chess-success/40 text-chess-success text-xs font-semibold">
                                   ✅ Visible on Website
+                                </span>
+                              )}
+                              {t.ctaUrl?.trim() ? (
+                                <span className="px-2.5 py-0.5 rounded-full bg-primary/15 border border-primary/40 text-primary text-xs font-semibold">
+                                  🔗 Button: Visible
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-full bg-surface-high text-on-surface-variant text-xs font-semibold border border-outline-subtle">
+                                  🚫 Button: Hidden
                                 </span>
                               )}
                             </div>
@@ -2204,15 +2271,47 @@ export default function AdminPage() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-on-surface mb-1">
+                              Tournament Link URL{" "}
+                              <span className="text-on-surface-variant font-normal">(Optional)</span>
+                            </label>
+                            <input
+                              type="url"
+                              placeholder="https://lichess.org/tournament/..."
+                              value={editingTournament.ctaUrl || ""}
+                              onChange={(e) =>
+                                setEditingTournament({
+                                  ...editingTournament,
+                                  ctaUrl: e.target.value,
+                                })
+                              }
+                              className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                            />
+                            <p className="text-xs text-on-surface-variant mt-1">Leave empty to hide the button on the website.</p>
+                            <div className="mt-2">
+                              {editingTournament.ctaUrl?.trim() ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 border border-primary/40 text-primary text-xs font-semibold">
+                                  🔗 Button: Visible
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-high text-on-surface-variant text-xs font-semibold border border-outline-subtle">
+                                  🚫 Button: Hidden
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {editingTournament.ctaUrl?.trim() && (
                             <div>
                               <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Button Text *
+                                Button Label{" "}
+                                <span className="text-on-surface-variant font-normal">(Optional)</span>
                               </label>
                               <input
                                 type="text"
-                                placeholder="Join on Lichess"
-                                value={editingTournament.ctaLabel}
+                                placeholder="Join Event"
+                                value={editingTournament.ctaLabel || ""}
                                 onChange={(e) =>
                                   setEditingTournament({
                                     ...editingTournament,
@@ -2221,25 +2320,9 @@ export default function AdminPage() {
                                 }
                                 className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                               />
+                              <p className="text-xs text-on-surface-variant mt-1">Defaults to &quot;Join Event&quot; if left blank.</p>
                             </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Tournament Link URL
-                              </label>
-                              <input
-                                type="url"
-                                placeholder="https://lichess.org/tournament/..."
-                                value={editingTournament.ctaUrl || ""}
-                                onChange={(e) =>
-                                  setEditingTournament({
-                                    ...editingTournament,
-                                    ctaUrl: e.target.value,
-                                  })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                          </div>
+                          )}
 
                           {/* Toggle */}
                           <div className="pt-2">
@@ -2316,30 +2399,43 @@ export default function AdminPage() {
                         Share highlights from online matches, simuls, and academy announcements.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newPost: JournalPost = {
-                          id: `gallery-${Date.now()}`,
-                          category: "classes",
-                          imageUrl: "/coaches/coach-levon.webp",
-                          imagePublicId: "gallery-sample",
-                          imageAlt: "Chess tactical seminar",
-                          dateLabel: "Spring 2026",
-                          kicker: "Grandmaster Seminar",
-                          title: "Mastering Queen's Indian Dynamics",
-                          excerpt:
-                            "Interactive group analysis with academy grandmasters examining critical middlegame plans.",
-                          order: gallery.length + 1,
-                          visible: true,
-                        };
-                        setEditingGallery(newPost);
-                      }}
-                      className="px-5 py-3 rounded-xl bg-primary text-on-primary font-bold text-base hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                    >
-                      <span className="text-lg">➕</span>
-                      <span>Add a Photo Post</span>
-                    </button>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <input
+                        ref={galleryFileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleMultiUploadGallery}
+                      />
+                      <button
+                        type="button"
+                        disabled={uploadingGallery}
+                        onClick={() => galleryFileInputRef.current?.click()}
+                        className="px-4 py-3 rounded-xl bg-surface-high hover:bg-surface-highest border border-primary/40 text-primary font-bold text-sm hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 shadow cursor-pointer disabled:opacity-50"
+                      >
+                        <span className="text-base">📁</span>
+                        <span>{uploadingGallery ? galleryUploadProgress : "Upload Multiple Photos"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newPost: GalleryImage = {
+                            id: `gallery-${Date.now()}`,
+                            imageUrl: "",
+                            imagePublicId: "",
+                            imageAlt: "",
+                            order: gallery.length + 1,
+                            visible: true,
+                          };
+                          setEditingGallery(newPost);
+                        }}
+                        className="px-5 py-3 rounded-xl bg-primary text-on-primary font-bold text-base hover:brightness-110 active:brightness-95 transition-all flex items-center gap-2 shadow-lg shadow-primary/20 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+                      >
+                        <span className="text-lg">➕</span>
+                        <span>Add Photo</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div className="space-y-4">
@@ -2358,10 +2454,10 @@ export default function AdminPage() {
                           <div className="space-y-1.5 flex-1">
                             <div className="flex items-center gap-3 flex-wrap">
                               <span className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 text-primary font-bold text-xs uppercase tracking-wider">
-                                {g.dateLabel}
+                                Photo
                               </span>
                               <h3 className="font-serif font-bold text-lg sm:text-xl text-on-surface">
-                                {g.title}
+                                {g.imageAlt || `Gallery photo ${idx + 1}`}
                               </h3>
                               {isBeingEdited && (
                                 <span className="px-2.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/40 text-xs font-bold uppercase tracking-wider">
@@ -2378,13 +2474,15 @@ export default function AdminPage() {
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-on-surface-variant line-clamp-2">{g.excerpt}</p>
+                            {g.imageUrl && (
+                              <p className="text-xs text-on-surface-variant truncate max-w-xs">{g.imageUrl}</p>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-2 flex-wrap shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-outline-subtle">
                             <button
                               type="button"
-                              aria-label={`Move ${g.title} up`}
+                              aria-label={`Move photo ${idx + 1} up`}
                               title="Move Up"
                               onClick={() => handleReorder("gallery", idx, "up")}
                               disabled={idx === 0}
@@ -2394,7 +2492,7 @@ export default function AdminPage() {
                             </button>
                             <button
                               type="button"
-                              aria-label={`Move ${g.title} down`}
+                              aria-label={`Move photo ${idx + 1} down`}
                               title="Move Down"
                               onClick={() => handleReorder("gallery", idx, "down")}
                               disabled={idx === gallery.length - 1}
@@ -2413,17 +2511,17 @@ export default function AdminPage() {
                             </button>
                             <button
                               type="button"
-                              aria-label={`Edit ${g.title}`}
+                              aria-label={`Edit photo ${idx + 1}`}
                               onClick={() => setEditingGallery(g)}
                               className="px-4 py-2 rounded-xl bg-primary text-on-primary font-bold text-xs sm:text-sm hover:brightness-110 active:brightness-95 transition-all shadow-md cursor-pointer flex items-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                             >
                               <span>✏️</span>
-                              <span>Edit Post</span>
+                              <span>Edit Photo</span>
                             </button>
                             <button
                               type="button"
-                              aria-label={`Delete ${g.title}`}
-                              onClick={() => handleDeleteGallery(g.id, g.title)}
+                              aria-label={`Delete photo ${idx + 1}`}
+                              onClick={() => handleDeleteGallery(g.id)}
                               className="px-3.5 py-2 rounded-xl border border-chess-error text-chess-error hover:bg-chess-error/10 text-xs font-semibold cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                             >
                               🗑️ Delete
@@ -2444,8 +2542,8 @@ export default function AdminPage() {
                               <span>📸</span>
                               <span>
                                 {gallery.some((g) => g.id === editingGallery.id)
-                                  ? `Editing: ${editingGallery.title}`
-                                  : "Add a Photo Dispatch"}
+                                  ? `Editing Photo`
+                                  : "Add a New Photo"}
                               </span>
                             </h3>
                             <p className="text-xs sm:text-sm text-on-surface-variant">
@@ -2478,86 +2576,22 @@ export default function AdminPage() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Title *
-                              </label>
-                              <input
-                                type="text"
-                                value={editingGallery.title}
-                                onChange={(e) =>
-                                  setEditingGallery({ ...editingGallery, title: e.target.value })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Category *
-                              </label>
-                              <select
-                                value={editingGallery.category}
-                                onChange={(e) =>
-                                  setEditingGallery({
-                                    ...editingGallery,
-                                    category: e.target.value as "classes" | "tournaments" | "events",
-                                  })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              >
-                                <option value="classes">Classes & Masterclasses</option>
-                                <option value="tournaments">Tournaments & Matches</option>
-                                <option value="events">Events & Seminars</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Date Label *
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="e.g. October 2026"
-                                value={editingGallery.dateLabel}
-                                onChange={(e) =>
-                                  setEditingGallery({ ...editingGallery, dateLabel: e.target.value })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-semibold text-on-surface mb-1">
-                                Tag / Kicker
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="e.g. Masterclass, Junior Simul"
-                                value={editingGallery.kicker}
-                                onChange={(e) =>
-                                  setEditingGallery({ ...editingGallery, kicker: e.target.value })
-                                }
-                                className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
-                              />
-                            </div>
-                          </div>
 
                           <div>
                             <label className="block text-sm font-semibold text-on-surface mb-1">
-                              Summary / Excerpt *
+                              Alt Text (optional)
                             </label>
-                            <textarea
-                              rows={3}
-                              value={editingGallery.excerpt}
+                            <input
+                              type="text"
+                              placeholder={`Rahman Chess Academy online chess class`}
+                              value={editingGallery.imageAlt || ""}
                               onChange={(e) =>
-                                setEditingGallery({ ...editingGallery, excerpt: e.target.value })
+                                setEditingGallery({ ...editingGallery, imageAlt: e.target.value })
                               }
                               className="w-full bg-surface-low border border-outline-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-base text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
                             />
+                            <p className="text-xs text-on-surface-variant mt-1">Leave blank to use the default fallback alt text.</p>
                           </div>
-
                           {/* Toggle */}
                           <div className="pt-2">
                             <label className="flex items-center gap-3.5 cursor-pointer select-none">

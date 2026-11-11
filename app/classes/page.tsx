@@ -14,7 +14,7 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rahmanchess.com";
 export const metadata: Metadata = {
   title: "Online Chess Classes & Curriculums | Rahman Chess Academy",
   description:
-    "Explore structured online chess curriculum tracks from beginner tactics to master-level prophylactic calculations. 100% online grandmaster apprenticeship.",
+    "Explore structured online chess curriculum tracks from beginner tactics to master-level prophylactic calculations. 100% online master apprenticeship.",
   metadataBase: new URL(siteUrl),
   alternates: {
     canonical: "/classes",

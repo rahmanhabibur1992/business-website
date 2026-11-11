@@ -26,13 +26,13 @@ export function CoachesSection({ coaches = COACHES_DATA }: CoachesSectionProps) 
           <div className="flex flex-col gap-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Grandmaster Faculty</span>
+              <span>Master Faculty</span>
             </div>
             <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-on-surface">
-              Direct Apprenticeship with Titled Masters
+              Direct Apprenticeship with Master Faculty
             </h2>
             <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-              Every mentor has represented national federations, trained Olympiad medalists, or achieved peak FIDE 2600+ ratings. Mentorship is delivered live online across time zones.
+              Personalized master-level training, deep tactical imbalance diagnostics, and live online coaching across global time zones.
             </p>
           </div>
           <button

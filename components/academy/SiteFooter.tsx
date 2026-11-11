@@ -3,7 +3,6 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { NewsletterForm } from "./NewsletterForm";
 import { useEnquiryModal } from "./EnquiryContext";
 import { SITE_CONTACT } from "@/lib/site-config";
 import { ACADEMY_CONFIG } from "@/lib/academy-content";
@@ -31,7 +30,7 @@ export function SiteFooter() {
               <span>RAHMAN CHESS ACADEMY</span>
             </div>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Grandmaster apprenticeships. 100% Online Global Academy.
+              Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Master apprenticeships. 100% Online Global Academy.
             </p>
           </div>
 
@@ -45,7 +44,7 @@ export function SiteFooter() {
               Classes &amp; Tracks
             </Link>
             <Link className="hover:text-primary transition-colors" href="/#coaches">
-              Grandmaster Faculty
+              Master Faculty
             </Link>
             <Link className="hover:text-primary transition-colors" href="/#tournaments">
               Tournament Arena
@@ -90,9 +89,8 @@ export function SiteFooter() {
               Theoretical Gazette
             </span>
             <p className="text-[11px] text-on-surface-variant font-sans">
-              Receive weekly PGN game studies and grandmaster tactical briefs directly in your inbox.
+              Receive weekly PGN game studies and master tactical briefs directly in your inbox.
             </p>
-            <NewsletterForm />
             <button
               type="button"
               className="mt-2 py-2 px-3 bg-surface-high border border-primary/40 hover:border-primary text-primary rounded font-bold uppercase text-[11px] transition-colors cursor-pointer text-center"
@@ -105,7 +103,8 @@ export function SiteFooter() {
 
         <div className="pt-8 border-t border-outline-subtle flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-[11px] text-on-surface-variant">
           <div>© {currentYear} Rahman Chess Academy. All training conducted online.</div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center sm:justify-end">
+            <a className="text-on-surface-variant" href={"https://antyk-technology.vercel.app/"} target="_blank">Made with ♥️ by ANTYK Technologies</a>
             <span className="text-outline-subtle">•</span>
             <span className="text-on-surface-variant font-mono">Global Chess Mentorship</span>
           </div>

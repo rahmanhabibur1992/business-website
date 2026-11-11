@@ -13,10 +13,7 @@ export interface ClassTrack {
   ratingLabel?: string;
   title: string;
   description: string;
-  duration: string;
-  sessionLength: string;
   batchSize: string;
-  schedule: string;
   modules: string[];
   perks?: string;
   formKey?: string;
@@ -48,7 +45,7 @@ export interface TournamentEvent {
   statusBadge?: {
     label: string;
     isLive?: boolean;
-    style: "live" | "upcoming" | "monthly";
+    style?: "live" | "upcoming" | "monthly";
   };
   statusLabel?: string;
   statusTone?: "live" | "upcoming" | "monthly";
@@ -58,39 +55,24 @@ export interface TournamentEvent {
   format: string;
   timeControl: string;
   dayTime: string;
-  action?: {
-    label: string;
-    href?: string;
-    external?: boolean;
-    isModalTrigger?: boolean;
-    modalType?: string;
-  };
-  ctaType?: "link" | "register";
   ctaLabel?: string;
   ctaUrl?: string;
   order?: number;
   visible?: boolean;
 }
 
-export interface JournalPost {
+export interface GalleryImage {
   id: string;
-  category: "tournaments" | "classes" | "events";
-  categoryLabel?: string;
-  dateAndType?: string;
-  dateLabel?: string;
-  kicker?: string;
-  title: string;
-  excerpt: string;
-  image?: string;
-  imageUrl?: string;
+  imageUrl: string;
   imagePublicId?: string;
+  width?: number;
+  height?: number;
   imageAlt?: string;
-  link?: string;
-  linkUrl?: string;
-  cornerPiece?: "bishop" | "knight";
-  order?: number;
-  visible?: boolean;
+  order: number;
+  visible: boolean;
 }
+
+export type JournalPost = GalleryImage;
 
 export interface TestimonialItem {
   id: string;
@@ -135,24 +117,24 @@ export interface ClassesSectionContent {
 }
 
 export const SEED_HERO_TAGS: HeroTag[] = [
-  { id: "tag-1", icon: "bolt", label: "1-on-1 GM Mentorship", tone: "primary" },
+  { id: "tag-1", icon: "bolt", label: "1-on-1 Master Mentorship", tone: "primary" },
   { id: "tag-2", icon: "psychology", label: "Syzygy & Stockfish 16 Prep", tone: "secondary" },
-  { id: "tag-3", icon: "trophy", label: "Rated FIDE & Lichess Arenas", tone: "primary" },
+  { id: "tag-3", icon: "trophy", label: "Rated Arena Competitions", tone: "primary" },
 ];
 
 export const SEED_CLASSES_SECTION: ClassesSectionContent = {
   pillLabel: "Curriculum Tracks",
   heading: "Structured Progression Syllabi",
   description:
-    "Designed by Grandmasters to systematically eliminate calculation weaknesses, reconstruct positional instincts, and build high-precision tournament opening repertoires.",
+    "Designed by our Master to systematically eliminate calculation weaknesses, reconstruct positional instincts, and build high-precision tournament opening repertoires.",
 };
 
 export const ACADEMY_CONFIG = {
   brandName: "Rahman Chess Academy",
   shortName: "Rahman Chess",
   suffix: "ACADEMY",
-  subtitle: "Grandmaster Mentorship Academy",
-  pageTitle: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+  subtitle: "Master Mentorship Academy",
+  pageTitle: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
   metaDescription:
     "Structured syllabi from basic pawn fundamentals to master-level prophylactic calculations. Personalized 1-on-1 coaching, weekend Blitz arena tournaments, and engine-augmented review.",
   copyrightYear: 2026,
@@ -171,10 +153,7 @@ export const CLASSES_DATA: ClassTrack[] = [
     title: "Chess Foundations & Tactics Primer",
     description:
       "Comprehensive training for novices and junior club players. Establishes tactical hygiene, piece coordination, checkmating patterns, and basic opening principles.",
-    duration: "12 Weeks",
-    sessionLength: "60 Mins",
     batchSize: "Max 6 Students",
-    schedule: "Tue & Thu 17:30 IST",
     modules: [
       "Forks & Pins Mastery",
       "King Safety & Castling",
@@ -189,26 +168,23 @@ export const CLASSES_DATA: ClassTrack[] = [
   {
     id: "advanced",
     slug: "advanced",
-    badge: "FIDE Prep Track",
+    badge: "Competition Prep Track",
     level: "Advanced",
     levelTone: "primary",
     mode: "Online",
     ratingRange: "ELO 1600 - 2200+",
     ratingLabel: "ELO 1600 - 2200+",
-    title: "Grandmaster Repertoire & Endgame Praxis",
+    title: "Master Repertoire & Endgame Praxis",
     description:
       "High-intensity positional refinement. Modern opening preparation with ChessBase & Stockfish 16, Syzygy tablebases, psychological time-trouble training, and blindfold drills.",
-    duration: "24 Weeks",
-    sessionLength: "90 Mins",
     batchSize: "Max 4 Students",
-    schedule: "Wed & Sat 19:00 IST",
     modules: [
       "Catalan & Sicilian Repertoire",
       "Exchange Sacrifices (Petrosian)",
       "Dvoretsky Rook Endings",
       "Anti-Computer Prep",
     ],
-    perks: "1-on-1 Monthly GM Game Review & PGN Library",
+    perks: "1-on-1 Monthly Master Game Review & PGN Library",
     formKey: "program-advanced",
     order: 2,
     visible: true,
@@ -218,18 +194,18 @@ export const CLASSES_DATA: ClassTrack[] = [
 export const COACHES_DATA: CoachProfile[] = [
   {
     id: "sarkisov",
-    name: "GM Levon Sarkisov",
-    role: "FIDE Senior Trainer • 18 Years Exp",
-    roleLine: "FIDE Senior Trainer • 18 Years Exp",
-    peakRating: "PEAK 2785 FIDE",
-    badge: "Super GM",
+    name: "Levon Sarkisov",
+    role: "Senior Trainer • 18 Years Exp",
+    roleLine: "Senior Trainer • 18 Years Exp",
+    peakRating: "PEAK 2785",
+    badge: "Master Coach",
     bio: "Trained two World Championship Candidates. Master pedagogue specializing in sharp tactical imbalances and dynamic compensation in closed pawn chains.",
     specializations: ["Sicilian Defense", "Kingside Attacks"],
     specialties: ["Sicilian Defense", "Kingside Attacks"],
     image: "/images/academy/coach-levon.svg",
     imageUrl: "/images/academy/coach-levon.svg",
     imagePublicId: "coach-levon",
-    imageAlt: "GM Levon Sarkisov - Grandmaster Chess Coach",
+    imageAlt: "Levon Sarkisov - Chess Coach",
     formKey: "coach-sarkisov",
     order: 1,
     visible: true,
@@ -246,19 +222,13 @@ export const TOURNAMENTS_DATA: TournamentEvent[] = [
     },
     statusLabel: "Live Tomorrow",
     statusTone: "live",
-    platform: "Lichess.org",
+    platform: "classroom.com",
     title: "Rahman Friday Rapid Arena",
     description:
       "Open to academy students & invited national rated candidates.",
     format: "Rapid (Swiss 5 Rounds)",
     timeControl: "10 min + 5 sec inc",
     dayTime: "Every Friday, 20:00 IST",
-    action: {
-      label: "Join on Lichess",
-      href: "https://lichess.org/tournament",
-      external: true,
-    },
-    ctaType: "link",
     ctaLabel: "Join on Lichess",
     ctaUrl: "https://lichess.org/tournament",
     order: 1,
@@ -266,68 +236,40 @@ export const TOURNAMENTS_DATA: TournamentEvent[] = [
   },
 ];
 
-export const JOURNAL_POSTS: JournalPost[] = [
+export const GALLERY_DATA: GalleryImage[] = [
   {
-    id: "post-1",
-    category: "tournaments",
-    categoryLabel: "Tournaments",
-    dateAndType: "14 Oct 2024 • Analysis Dispatch",
-    dateLabel: "14 Oct 2024",
-    kicker: "Analysis Dispatch",
-    title: "Rahman Pupils Sweep Podium at State Youth Rapid",
-    excerpt:
-      "Detailed tournament report from our 8 junior prodigies who secured gold, silver, and fourth place in Ahmedabad.",
-    image: "/images/academy/journal-tournaments.svg",
+    id: "gallery-1",
     imageUrl: "/images/academy/journal-tournaments.svg",
-    imagePublicId: "journal-tournaments",
-    imageAlt: "Junior chess champions tournament analysis",
-    link: "#",
-    linkUrl: "#",
-    cornerPiece: "bishop",
+    imagePublicId: "gallery-tournaments",
+    imageAlt: "Rahman Chess Academy online chess class – photo 1",
+    width: 800,
+    height: 600,
     order: 1,
     visible: true,
   },
   {
-    id: "post-2",
-    category: "classes",
-    categoryLabel: "Classes",
-    dateAndType: "28 Sep 2024 • Repertoire Guide",
-    dateLabel: "28 Sep 2024",
-    kicker: "Repertoire Guide",
-    title: "Dissecting the Tartakower Queen's Gambit Declined",
-    excerpt:
-      "Key prophylactic pawn moves and hanging pawns management taught in the Advanced Cohort masterclass.",
-    image: "/images/academy/journal-classes.svg",
+    id: "gallery-2",
     imageUrl: "/images/academy/journal-classes.svg",
-    imagePublicId: "journal-classes",
-    imageAlt: "Queen's Gambit masterclass opening board",
-    link: "#",
-    linkUrl: "#",
-    cornerPiece: "knight",
+    imagePublicId: "gallery-classes",
+    imageAlt: "Rahman Chess Academy online chess class – photo 2",
+    width: 800,
+    height: 600,
     order: 2,
     visible: true,
   },
   {
-    id: "post-3",
-    category: "events",
-    categoryLabel: "Events",
-    dateAndType: "10 Sep 2024 • Exhibition",
-    dateLabel: "10 Sep 2024",
-    kicker: "Exhibition",
-    title: "Annual 25-Board Simultaneous Exhibition Highlights",
-    excerpt:
-      "Watch the full video recap as Super GM Levon played 25 titled aspirants blindfolded on 3 boards.",
-    image: "/images/academy/journal-events.svg",
+    id: "gallery-3",
     imageUrl: "/images/academy/journal-events.svg",
-    imagePublicId: "journal-events",
-    imageAlt: "Grandmaster simultaneous exhibition match",
-    link: "#",
-    linkUrl: "#",
-    cornerPiece: "bishop",
+    imagePublicId: "gallery-events",
+    imageAlt: "Rahman Chess Academy online chess class – photo 3",
+    width: 800,
+    height: 600,
     order: 3,
     visible: true,
   },
 ];
+
+export const JOURNAL_POSTS = GALLERY_DATA;
 
 export const TESTIMONIALS_DATA: TestimonialItem[] = [
   {
@@ -335,7 +277,7 @@ export const TESTIMONIALS_DATA: TestimonialItem[] = [
     stars: 5,
     rating: 5,
     quote:
-      "“My son Aarav increased his FIDE rating by 240 points in just 7 months. The personalized feedback on his openings and the weekly Blitz arenas gave him tremendous psychological composure.”",
+      "“My son Aarav increased his rating by 240 points in just 7 months. The personalized feedback on his openings and the weekly Blitz arenas gave him tremendous psychological composure.”",
     author: "Sunita Sharma",
     name: "Sunita Sharma",
     role: "Parent of Aarav (U-12 State Champ)",
@@ -352,11 +294,11 @@ export const TESTIMONIALS_DATA: TestimonialItem[] = [
     stars: 5,
     rating: 5,
     quote:
-      "“GM Elena completely restructured how I perceive endgames. Before Rahman, I lost drawn rook and pawn endings. Now I turn equal positions into full points with surgical prophylaxis.”",
+      "“Coach Elena completely restructured how I perceive endgames. Before Rahman, I lost drawn rook and pawn endings. Now I turn equal positions into full points with surgical prophylaxis.”",
     author: "Rohan Iyer",
     name: "Rohan Iyer",
-    role: "Candidate Master (FIDE 2085)",
-    relation: "Candidate Master (FIDE 2085)",
+    role: "Tournament Player (Rating 2085)",
+    relation: "Tournament Player (Rating 2085)",
     cohort: "Student Member",
     classLabel: "Student Member",
     consentBadge: "Consent Confirmed",
@@ -389,7 +331,7 @@ export const PROCESS_STAGES: ProcessStage[] = [
     code: "OPENING",
     title: "Book Assessment",
     description:
-      "Baseline diagnostic rating evaluation & opening repertoire audit by International Masters.",
+      "Baseline diagnostic rating evaluation & opening repertoire audit by our Master.",
     piece: "pawn",
   },
   {
@@ -405,7 +347,7 @@ export const PROCESS_STAGES: ProcessStage[] = [
     code: "TACTICS",
     title: "Tournament Play",
     description:
-      "Weekly rated FIDE & Lichess Blitz arena praxis with real-time Grandmaster tactical breakdown.",
+      "Weekly rated Blitz arena praxis with real-time Master tactical breakdown.",
     piece: "rook",
   },
   {
@@ -413,7 +355,7 @@ export const PROCESS_STAGES: ProcessStage[] = [
     code: "ENDGAME",
     title: "Mastery & Norms",
     description:
-      "Theoretical tablebase conversion, anti-computer novelties & titled FIDE norm coaching.",
+      "Theoretical tablebase conversion, anti-computer novelties & competitive coaching.",
     piece: "queen",
   },
 ];

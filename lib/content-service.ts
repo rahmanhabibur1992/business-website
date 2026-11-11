@@ -8,14 +8,14 @@ import {
   CLASSES_DATA,
   COACHES_DATA,
   TOURNAMENTS_DATA,
-  JOURNAL_POSTS,
+  GALLERY_DATA,
   TESTIMONIALS_DATA,
   HeroTag,
   ClassesSectionContent,
   ClassTrack,
   CoachProfile,
   TournamentEvent,
-  JournalPost,
+  GalleryImage,
   TestimonialItem,
 } from "./academy-content";
 
@@ -25,7 +25,7 @@ interface AppContentStore {
   classes: ClassTrack[];
   coaches: CoachProfile[];
   tournaments: TournamentEvent[];
-  gallery: JournalPost[];
+  gallery: GalleryImage[];
   testimonials: TestimonialItem[];
   updatedAt?: string;
 }
@@ -43,7 +43,7 @@ function getInitialStore(): AppContentStore {
     classes: CLASSES_DATA,
     coaches: COACHES_DATA,
     tournaments: TOURNAMENTS_DATA,
-    gallery: JOURNAL_POSTS,
+    gallery: GALLERY_DATA,
     testimonials: TESTIMONIALS_DATA,
     updatedAt: new Date().toISOString(),
   };
@@ -174,6 +174,37 @@ async function fetchClassesSectionRaw(): Promise<ClassesSectionContent> {
   return SEED_CLASSES_SECTION;
 }
 
+function sanitizeClassTrack(raw: unknown): ClassTrack {
+  if (!raw || typeof raw !== "object") return raw as unknown as ClassTrack;
+  const clean = { ...(raw as Record<string, unknown>) };
+  delete clean.duration;
+  delete clean.sessionLength;
+  delete clean.schedule;
+  return clean as unknown as ClassTrack;
+}
+
+function sanitizeTournamentEvent(raw: unknown): TournamentEvent {
+  if (!raw || typeof raw !== "object") return raw as unknown as TournamentEvent;
+  const clean = { ...(raw as Record<string, unknown>) };
+  delete clean.ctaType;
+  delete clean.action;
+  return clean as unknown as TournamentEvent;
+}
+
+function sanitizeGalleryImage(raw: unknown, index = 0): GalleryImage {
+  const item = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  return {
+    id: String(item.id || `gallery-${index + 1}`),
+    imageUrl: String(item.imageUrl || item.image || ""),
+    imagePublicId: (item.imagePublicId as string) || "",
+    width: typeof item.width === "number" ? item.width : undefined,
+    height: typeof item.height === "number" ? item.height : undefined,
+    imageAlt: (item.imageAlt as string) || `Rahman Chess Academy online chess class – photo ${index + 1}`,
+    order: typeof item.order === "number" ? item.order : index + 1,
+    visible: item.visible !== false,
+  };
+}
+
 async function fetchClassesRaw(): Promise<ClassTrack[]> {
   if (hasAdminCredentials()) {
     try {
@@ -181,7 +212,7 @@ async function fetchClassesRaw(): Promise<ClassTrack[]> {
       if (fsDb) {
         const snap = await fsDb.collection("classes").get();
         if (!snap.empty) {
-          const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as ClassTrack));
+          const list = snap.docs.map((d) => sanitizeClassTrack({ id: d.id, ...d.data() }));
           list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           return list;
         }
@@ -195,18 +226,20 @@ async function fetchClassesRaw(): Promise<ClassTrack[]> {
   if (rtdbData) {
     const list = Array.isArray(rtdbData) ? rtdbData.filter(Boolean) : Object.values(rtdbData);
     if (list.length > 0) {
-      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      return list;
+      const sanitized = list.map(sanitizeClassTrack);
+      sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return sanitized;
     }
   }
 
   const local = readLocalStore();
   if (local.classes && local.classes.length > 0) {
-    local.classes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return local.classes;
+    const sanitized = local.classes.map(sanitizeClassTrack);
+    sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return sanitized;
   }
 
-  return CLASSES_DATA;
+  return CLASSES_DATA.map(sanitizeClassTrack);
 }
 
 async function fetchCoachesRaw(): Promise<CoachProfile[]> {
@@ -251,7 +284,7 @@ async function fetchTournamentsRaw(): Promise<TournamentEvent[]> {
       if (fsDb) {
         const snap = await fsDb.collection("tournaments").get();
         if (!snap.empty) {
-          const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as TournamentEvent));
+          const list = snap.docs.map((d) => sanitizeTournamentEvent({ id: d.id, ...d.data() }));
           list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           return list;
         }
@@ -265,28 +298,30 @@ async function fetchTournamentsRaw(): Promise<TournamentEvent[]> {
   if (rtdbData) {
     const list = Array.isArray(rtdbData) ? rtdbData.filter(Boolean) : Object.values(rtdbData);
     if (list.length > 0) {
-      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      return list;
+      const sanitized = list.map(sanitizeTournamentEvent);
+      sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return sanitized;
     }
   }
 
   const local = readLocalStore();
   if (local.tournaments && local.tournaments.length > 0) {
-    local.tournaments.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return local.tournaments;
+    const sanitized = local.tournaments.map(sanitizeTournamentEvent);
+    sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return sanitized;
   }
 
-  return TOURNAMENTS_DATA;
+  return TOURNAMENTS_DATA.map(sanitizeTournamentEvent);
 }
 
-async function fetchGalleryRaw(): Promise<JournalPost[]> {
+async function fetchGalleryRaw(): Promise<GalleryImage[]> {
   if (hasAdminCredentials()) {
     try {
       const fsDb = getAdminFirestore();
       if (fsDb) {
         const snap = await fsDb.collection("gallery").get();
         if (!snap.empty) {
-          const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as JournalPost));
+          const list = snap.docs.map((d, idx) => sanitizeGalleryImage({ id: d.id, ...d.data() }, idx));
           list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
           return list;
         }
@@ -296,22 +331,24 @@ async function fetchGalleryRaw(): Promise<JournalPost[]> {
     }
   }
 
-  const rtdbData = await readFromRtdb<Record<string, JournalPost> | JournalPost[]>("gallery");
+  const rtdbData = await readFromRtdb<Record<string, GalleryImage> | GalleryImage[]>("gallery");
   if (rtdbData) {
     const list = Array.isArray(rtdbData) ? rtdbData.filter(Boolean) : Object.values(rtdbData);
     if (list.length > 0) {
-      list.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      return list;
+      const sanitized = list.map((item, idx) => sanitizeGalleryImage(item, idx));
+      sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      return sanitized;
     }
   }
 
   const local = readLocalStore();
   if (local.gallery && local.gallery.length > 0) {
-    local.gallery.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    return local.gallery;
+    const sanitized = local.gallery.map((item, idx) => sanitizeGalleryImage(item, idx));
+    sanitized.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return sanitized;
   }
 
-  return JOURNAL_POSTS;
+  return GALLERY_DATA;
 }
 
 async function fetchTestimonialsRaw(): Promise<TestimonialItem[]> {
@@ -490,26 +527,28 @@ export async function saveClassesSection(section: ClassesSectionContent) {
 }
 
 export async function saveClassTrack(track: ClassTrack) {
+  const cleanTrack = sanitizeClassTrack(track);
   const store = readLocalStore();
-  const existingIdx = store.classes.findIndex((c) => c.id === track.id);
+  const existingIdx = store.classes.findIndex((c) => c.id === cleanTrack.id);
   if (existingIdx >= 0) {
-    store.classes[existingIdx] = { ...store.classes[existingIdx], ...track };
+    store.classes[existingIdx] = cleanTrack;
   } else {
-    store.classes.push(track);
+    store.classes.push(cleanTrack);
   }
   store.classes.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   store.updatedAt = new Date().toISOString();
   writeLocalStore(store);
 
-  await writeToRtdb(`classes/${track.id}`, track);
+  await writeToRtdb(`classes/${cleanTrack.id}`, cleanTrack);
 
   if (hasAdminCredentials()) {
     try {
       const fsDb = getAdminFirestore();
       if (fsDb) {
-        await fsDb.collection("classes").doc(track.id).set(
-          { ...track, updatedAt: store.updatedAt },
-          { merge: true }
+        // Strip duration, sessionLength, schedule on next save by overwriting document
+        await fsDb.collection("classes").doc(cleanTrack.id).set(
+          { ...cleanTrack, updatedAt: store.updatedAt },
+          { merge: false }
         );
       }
     } catch (e) {
@@ -600,26 +639,27 @@ export async function deleteCoachProfile(id: string) {
 }
 
 export async function saveTournamentEvent(tournament: TournamentEvent) {
+  const cleanTourn = sanitizeTournamentEvent(tournament);
   const store = readLocalStore();
-  const existingIdx = store.tournaments.findIndex((t) => t.id === tournament.id);
+  const existingIdx = store.tournaments.findIndex((t) => t.id === cleanTourn.id);
   if (existingIdx >= 0) {
-    store.tournaments[existingIdx] = { ...store.tournaments[existingIdx], ...tournament };
+    store.tournaments[existingIdx] = cleanTourn;
   } else {
-    store.tournaments.push(tournament);
+    store.tournaments.push(cleanTourn);
   }
   store.tournaments.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   store.updatedAt = new Date().toISOString();
   writeLocalStore(store);
 
-  await writeToRtdb(`tournaments/${tournament.id}`, tournament);
+  await writeToRtdb(`tournaments/${cleanTourn.id}`, cleanTourn);
 
   if (hasAdminCredentials()) {
     try {
       const fsDb = getAdminFirestore();
       if (fsDb) {
-        await fsDb.collection("tournaments").doc(tournament.id).set(
-          { ...tournament, updatedAt: store.updatedAt },
-          { merge: true }
+        await fsDb.collection("tournaments").doc(cleanTourn.id).set(
+          { ...cleanTourn, updatedAt: store.updatedAt },
+          { merge: false }
         );
       }
     } catch (e) {
@@ -654,27 +694,29 @@ export async function deleteTournamentEvent(id: string) {
   }
 }
 
-export async function saveGalleryItem(item: JournalPost) {
+export async function saveGalleryItem(item: GalleryImage) {
+  const cleanItem = sanitizeGalleryImage(item);
   const store = readLocalStore();
-  const existingIdx = store.gallery.findIndex((g) => g.id === item.id);
+  const existingIdx = store.gallery.findIndex((g) => g.id === cleanItem.id);
   if (existingIdx >= 0) {
-    store.gallery[existingIdx] = { ...store.gallery[existingIdx], ...item };
+    store.gallery[existingIdx] = cleanItem;
   } else {
-    store.gallery.push(item);
+    store.gallery.push(cleanItem);
   }
   store.gallery.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   store.updatedAt = new Date().toISOString();
   writeLocalStore(store);
 
-  await writeToRtdb(`gallery/${item.id}`, item);
+  await writeToRtdb(`gallery/${cleanItem.id}`, cleanItem);
 
   if (hasAdminCredentials()) {
     try {
       const fsDb = getAdminFirestore();
       if (fsDb) {
-        await fsDb.collection("gallery").doc(item.id).set(
-          { ...item, updatedAt: store.updatedAt },
-          { merge: true }
+        // Firestore gallery/{id} holds only: imageUrl, imagePublicId, width, height, imageAlt, order, visible
+        await fsDb.collection("gallery").doc(cleanItem.id).set(
+          { ...cleanItem, updatedAt: store.updatedAt },
+          { merge: false }
         );
       }
     } catch (e) {
@@ -825,8 +867,8 @@ export async function seedDefaultsToFirestore() {
   TOURNAMENTS_DATA.forEach((t) => (tournamentsMap[t.id] = t));
   await writeToRtdb("tournaments", tournamentsMap);
 
-  const galleryMap: Record<string, JournalPost> = {};
-  JOURNAL_POSTS.forEach((g) => (galleryMap[g.id] = g));
+  const galleryMap: Record<string, GalleryImage> = {};
+  GALLERY_DATA.forEach((g) => (galleryMap[g.id] = g));
   await writeToRtdb("gallery", galleryMap);
 
   const testimonialsMap: Record<string, TestimonialItem> = {};
@@ -844,10 +886,10 @@ export async function seedDefaultsToFirestore() {
         batch.set(fsDb.collection("site_content").doc("hero"), { tags: SEED_HERO_TAGS, updatedAt: now }, { merge: true });
         batch.set(fsDb.collection("site_content").doc("classesSection"), { ...SEED_CLASSES_SECTION, updatedAt: now }, { merge: true });
 
-        CLASSES_DATA.forEach((c) => batch.set(fsDb.collection("classes").doc(c.id), { ...c, updatedAt: now }, { merge: true }));
+        CLASSES_DATA.forEach((c) => batch.set(fsDb.collection("classes").doc(c.id), { ...sanitizeClassTrack(c), updatedAt: now }, { merge: false }));
         COACHES_DATA.forEach((c) => batch.set(fsDb.collection("coaches").doc(c.id), { ...c, updatedAt: now }, { merge: true }));
-        TOURNAMENTS_DATA.forEach((t) => batch.set(fsDb.collection("tournaments").doc(t.id), { ...t, updatedAt: now }, { merge: true }));
-        JOURNAL_POSTS.forEach((g) => batch.set(fsDb.collection("gallery").doc(g.id), { ...g, updatedAt: now }, { merge: true }));
+        TOURNAMENTS_DATA.forEach((t) => batch.set(fsDb.collection("tournaments").doc(t.id), { ...sanitizeTournamentEvent(t), updatedAt: now }, { merge: false }));
+        GALLERY_DATA.forEach((g) => batch.set(fsDb.collection("gallery").doc(g.id), { ...g, updatedAt: now }, { merge: false }));
         TESTIMONIALS_DATA.forEach((t) => batch.set(fsDb.collection("testimonials").doc(t.id), { ...t, updatedAt: now }, { merge: true }));
 
         await batch.commit();

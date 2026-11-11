@@ -91,23 +91,19 @@ export function ClassesSection({
                     {track.description}
                   </p>
 
-                  {/* 4 Stats Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 py-3 border-y border-outline-subtle font-mono text-xs">
+                  {/* Rebalanced 3-Col Meta Area: Target Rating, Format & Batch Size */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 py-3 border-y border-outline-subtle font-mono text-xs">
                     <div>
-                      <div className="text-[10px] text-on-surface-variant uppercase">Duration</div>
-                      <div className="text-on-surface font-semibold">{track.duration}</div>
+                      <div className="text-[10px] text-on-surface-variant uppercase tracking-wider">Rating Band</div>
+                      <div className="text-on-surface font-semibold truncate">{track.ratingLabel || track.ratingRange || "All Levels"}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-on-surface-variant uppercase">Session</div>
-                      <div className="text-on-surface font-semibold">{track.sessionLength}</div>
+                      <div className="text-[10px] text-on-surface-variant uppercase tracking-wider">Format</div>
+                      <div className="text-on-surface font-semibold truncate">{track.mode || "Online"}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-on-surface-variant uppercase">Batch Size</div>
-                      <div className="text-on-surface font-semibold">{track.batchSize}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] text-on-surface-variant uppercase">Schedule</div>
-                      <div className="text-on-surface font-semibold">{track.schedule}</div>
+                      <div className="text-[10px] text-on-surface-variant uppercase tracking-wider">Cohort</div>
+                      <div className="text-on-surface font-semibold truncate">{track.batchSize}</div>
                     </div>
                   </div>
 

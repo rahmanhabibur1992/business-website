@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEnquiryModal } from "./EnquiryContext";
 import { useActiveSection } from "./ActiveSectionContext";
 
 interface NavItem {
@@ -22,7 +21,6 @@ const NAV_LINKS: NavItem[] = [
 ];
 
 export function SiteHeader() {
-  const { openModal } = useEnquiryModal();
   const { activeSectionId, scrollToSection } = useActiveSection();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,13 +35,8 @@ export function SiteHeader() {
     if (!isHomePage) {
       return false;
     }
-    // While hero is active, no link is highlighted
     if (activeSectionId === "hero") {
       return false;
-    }
-    // gallery and journal both map to Gallery link
-    if (item.id === "gallery") {
-      return activeSectionId === "gallery" || activeSectionId === "journal";
     }
     return activeSectionId === item.id;
   };
@@ -57,11 +50,11 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 w-full z-40 bg-surface-lowest/90 backdrop-blur-xl border-b border-outline-subtle">
-      <div className="max-w-7xl mx-auto h-20 px-4 lg:px-12 flex items-center justify-between">
-        {/* Brand Logo */}
+    <header className="sticky top-0 w-full z-40 bg-surface-lowest/90 backdrop-blur-xl border-b border-outline-subtle h-[var(--header-h)]">
+      <div className="max-w-7xl mx-auto h-full px-3 md:px-6 lg:px-12 flex items-center justify-between gap-2">
+        {/* Brand Logo & Wordmark (at most 2 lines, whitespace-nowrap, min-w-0) */}
         <Link
-          className="flex items-center gap-3 group"
+          className="flex items-center gap-2 sm:gap-3 group min-w-0"
           href="/#hero"
           onClick={(e) => {
             if (isHomePage) {
@@ -70,21 +63,23 @@ export function SiteHeader() {
             }
           }}
         >
-          <div className="w-10 h-10 rounded-lg bg-surface-high border border-primary/40 flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors shadow-[0_0_15px_rgba(242,202,80,0.15)] relative">
+          <div className="w-10 h-10 shrink-0 rounded-lg bg-surface-high border border-primary/40 flex items-center justify-center overflow-hidden group-hover:border-primary transition-colors shadow-[0_0_15px_rgba(242,202,80,0.15)] relative">
             <Image
               src="/logo.jpeg"
               alt="Rahman Chess Academy Logo"
               width={40}
               height={40}
               className="w-full h-full object-contain"
+              priority
             />
           </div>
-          <div className="flex flex-col">
-            <span className="font-display text-lg md:text-xl font-bold tracking-tight text-on-surface group-hover:text-primary transition-colors">
-              RAHMAN CHESS <span className="hidden sm:inline">ACADEMY</span>
+          <div className="flex flex-col min-w-0 justify-center">
+            <span className="font-display text-sm sm:text-lg md:text-xl font-bold tracking-tight text-on-surface group-hover:text-primary transition-colors whitespace-nowrap truncate leading-tight">
+              RAHMAN CHESS<span className="hidden sm:inline"> ACADEMY</span>
             </span>
-            <span className="font-mono text-[10px] tracking-widest uppercase text-secondary">
-              Mentorship Academy • 100% Online
+            <span className="font-mono text-[9px] sm:text-[10px] tracking-wider uppercase text-secondary whitespace-nowrap truncate leading-tight mt-0.5">
+              <span className="sm:hidden">ACADEMY &bull; ONLINE</span>
+              <span className="hidden sm:inline">Think&middot;Plan&middot;Move&middot;Win</span>
             </span>
           </div>
         </Link>
@@ -92,7 +87,7 @@ export function SiteHeader() {
         {/* Desktop Navigation Links */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden lg:flex items-center gap-8 text-sm font-medium"
+          className="hidden lg:flex items-center gap-8 text-sm font-medium shrink-0"
         >
           {NAV_LINKS.map((link) => {
             const active = isLinkActive(link);
@@ -121,23 +116,25 @@ export function SiteHeader() {
         </nav>
 
         {/* Action Button & Mobile Menu Toggle */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="px-5 py-2.5 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded hover:opacity-90 transition-all shadow-[0_0_20px_rgba(242,202,80,0.25)] flex items-center gap-1.5 cursor-pointer font-mono"
-            onClick={(e) => openModal("assessment", e.currentTarget)}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <Link
+            href="/classes"
+            className="shrink-0 h-10 px-3 sm:px-4 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded hover:opacity-90 transition-all shadow-[0_0_20px_rgba(242,202,80,0.25)] flex items-center gap-1.5 font-mono whitespace-nowrap"
           >
             <span className="material-symbols-outlined text-base">calendar_month</span>
-            <span>Book Assessment</span>
-          </button>
+            <span>
+              <span className="sm:hidden">Book</span>
+              <span className="hidden sm:inline">Book Assessment</span>
+            </span>
+          </Link>
 
-          {/* Mobile hamburger button */}
+          {/* Mobile hamburger button: vertically centered on same axis as CTA and Logo (40px) */}
           <button
             type="button"
             aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            className="lg:hidden p-2 rounded-lg bg-surface border border-outline-subtle text-on-surface hover:text-primary cursor-pointer flex items-center justify-center"
+            className="lg:hidden h-10 w-10 shrink-0 rounded-lg bg-surface border border-outline-subtle text-on-surface hover:text-primary cursor-pointer flex items-center justify-center"
           >
             <span className="material-symbols-outlined text-2xl">
               {mobileMenuOpen ? "close" : "menu"}
@@ -150,7 +147,7 @@ export function SiteHeader() {
       {mobileMenuOpen && (
         <nav
           aria-label="Mobile Navigation"
-          className="lg:hidden bg-surface-lowest border-b border-outline-subtle px-6 py-4 flex flex-col gap-3 font-mono text-sm shadow-2xl"
+          className="lg:hidden absolute top-[var(--header-h)] left-0 w-full bg-surface-lowest border-b border-outline-subtle px-4 py-4 flex flex-col gap-2 font-mono text-sm shadow-2xl"
         >
           {NAV_LINKS.map((link) => {
             const active = isLinkActive(link);

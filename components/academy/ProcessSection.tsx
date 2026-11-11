@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { ChessPiece } from "./ChessPiece";
-import { useEnquiryModal } from "./EnquiryContext";
 import { PROCESS_STAGES, ProcessStage } from "@/lib/academy-content";
 
 interface ProcessSectionProps {
@@ -10,7 +10,6 @@ interface ProcessSectionProps {
 }
 
 export function ProcessSection({ stages = PROCESS_STAGES }: ProcessSectionProps) {
-  const { openModal } = useEnquiryModal();
 
   return (
     <section
@@ -24,7 +23,7 @@ export function ProcessSection({ stages = PROCESS_STAGES }: ProcessSectionProps)
             PEDAGOGY LIFECYCLE
           </div>
           <h2 className="font-display text-3xl sm:text-4xl font-bold text-on-surface">
-            Grandmaster Progression Framework
+            Master Progression Framework
           </h2>
           <p className="text-sm text-on-surface-variant mt-2">
             A structured, sequential four-stage trajectory transforming motivated learners into FIDE-ranked competitive masters.
@@ -75,14 +74,13 @@ export function ProcessSection({ stages = PROCESS_STAGES }: ProcessSectionProps)
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              type="button"
+            <Link
+              href="/classes"
               className="px-6 py-3.5 bg-primary text-on-primary font-mono text-xs uppercase tracking-wider font-bold rounded-lg hover:opacity-90 transition-all shadow-[0_0_20px_rgba(242,202,80,0.3)] flex items-center gap-2 cursor-pointer"
-              onClick={(e) => openModal("assessment", e.currentTarget)}
             >
-              <span>Book Free Diagnostic Class</span>
+              <span>Explore Classes</span>
               <span className="material-symbols-outlined text-base">arrow_forward</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>

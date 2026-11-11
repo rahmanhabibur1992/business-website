@@ -42,9 +42,11 @@ export function cleanText(input: string, maxLen = 60): string {
 export function buildEnrollWhatsAppUrl(data: {
   title: string;
   level: string;
-  schedule: string;
+  schedule?: string;
   name: string;
   age: string | number;
+  studentLevel?: string;
+  wantCallback?: boolean;
 }): string {
   const cleanName = cleanText(data.name, 60);
   const cleanAge = String(data.age).replace(/[^0-9]/g, "").slice(0, 2);
@@ -54,9 +56,10 @@ export function buildEnrollWhatsAppUrl(data: {
     "I'd like to enroll in an online chess class.",
     `*Class:* ${data.title}`,
     `*Level:* ${data.level}`,
-    `*Schedule:* ${data.schedule}`,
+    ...(data.studentLevel ? [`*Current Skill Level:* ${cleanText(data.studentLevel, 30)}`] : []),
     `*Student Name:* ${cleanName}`,
     `*Age:* ${cleanAge}`,
+    ...(data.wantCallback ? ["*Urgent:* Please contact me back immediately ⚡"] : []),
     "Please share the next steps.",
   ].join("\n");
 
@@ -66,6 +69,8 @@ export function buildEnrollWhatsAppUrl(data: {
 export function buildGeneralEnquiryWhatsAppUrl(data: {
   name: string;
   age: string | number;
+  studentLevel?: string;
+  wantCallback?: boolean;
 }): string {
   const cleanName = cleanText(data.name, 60);
   const cleanAge = String(data.age).replace(/[^0-9]/g, "").slice(0, 2);
@@ -75,6 +80,8 @@ export function buildGeneralEnquiryWhatsAppUrl(data: {
     "I'd like to enquire about your online chess classes.",
     `*Student Name:* ${cleanName}`,
     `*Age:* ${cleanAge}`,
+    ...(data.studentLevel ? [`*Current Skill Level:* ${cleanText(data.studentLevel, 30)}`] : []),
+    ...(data.wantCallback ? ["*Urgent:* Please contact me back immediately ⚡"] : []),
     "Please share the details.",
   ].join("\n");
 

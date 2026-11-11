@@ -3,7 +3,7 @@
     {
       "id": "tag-1",
       "icon": "bolt",
-      "label": "1-on-1 GM Mentorship",
+      "label": "1-on-1 Mentorship",
       "tone": "primary"
     },
     {
@@ -22,7 +22,7 @@
   "classesSection": {
     "pillLabel": "Curriculum Tracks",
     "heading": "Structured Progression Syllabi",
-    "description": "Designed by Grandmasters to systematically eliminate calculation weaknesses, reconstruct positional instincts, and build high-precision tournament opening repertoires."
+    "description": "Designed by our Master to systematically eliminate calculation weaknesses, reconstruct positional instincts, and build high-precision tournament opening repertoires."
   },
   "classes": [
     {
@@ -35,10 +35,7 @@
       "ratingLabel": "Beginner to Club 1400",
       "title": "Chess Foundations & Tactics Primer",
       "description": "Comprehensive training for novices and junior club players. Establishes tactical hygiene, piece coordination, checkmating patterns, and basic opening principles.",
-      "duration": "12 Weeks",
-      "sessionLength": "60 Mins",
       "batchSize": "Max 6 Students",
-      "schedule": "Tue & Thu 17:30 IST",
       "modules": [
         "Forks & Pins Mastery",
         "King Safety & Castling",
@@ -53,25 +50,22 @@
     {
       "id": "advanced",
       "slug": "advanced",
-      "badge": "FIDE Prep Track",
+      "badge": "Competition Prep Track",
       "level": "Advanced",
       "levelTone": "primary",
       "mode": "Online",
       "ratingRange": "ELO 1600 - 2200+",
       "ratingLabel": "ELO 1600 - 2200+",
-      "title": "Grandmaster Repertoire & Endgame Praxis",
+      "title": "Master Repertoire & Endgame Praxis",
       "description": "High-intensity positional refinement. Modern opening preparation with ChessBase & Stockfish 16, Syzygy tablebases, psychological time-trouble training, and blindfold drills.",
-      "duration": "24 Weeks",
-      "sessionLength": "90 Mins",
       "batchSize": "Max 4 Students",
-      "schedule": "Wed & Sat 19:00 IST",
       "modules": [
         "Catalan & Sicilian Repertoire",
         "Exchange Sacrifices (Petrosian)",
         "Dvoretsky Rook Endings",
         "Anti-Computer Prep"
       ],
-      "perks": "1-on-1 Monthly GM Game Review & PGN Library",
+      "perks": "1-on-1 Monthly Master Game Review & PGN Library",
       "formKey": "program-advanced",
       "order": 2,
       "visible": true
@@ -81,7 +75,7 @@
     {
       "id": "sarkisov",
       "name": "GM Levon Sarkisov",
-      "role": "FIDE Senior Trainer • 18 Years Exp",
+      "role": "Senior Trainer • 18 Years Exp",
       "roleLine": "FIDE Senior Trainer • 18 Years Exp",
       "peakRating": "PEAK 2785 FIDE",
       "badge": "Super GM",
@@ -95,8 +89,8 @@
         "Kingside Attacks"
       ],
       "image": "/images/academy/coach-levon.svg",
-      "imageUrl": "/images/academy/coach-levon.svg",
-      "imagePublicId": "coach-levon",
+      "imageUrl": "https://res.cloudinary.com/npvxsx7y/image/upload/v1794379365/rahman-chess-academy/coaches/m8jdgueltpnvyyohrjqu.jpg",
+      "imagePublicId": "rahman-chess-academy/coaches/m8jdgueltpnvyyohrjqu",
       "imageAlt": "GM Levon Sarkisov - Grandmaster Chess Coach",
       "formKey": "coach-sarkisov",
       "order": 1,
@@ -106,86 +100,72 @@
   "tournaments": [
     {
       "id": "friday-rapid",
-      "statusBadge": {
-        "label": "Live Tomorrow",
-        "isLive": true,
-        "style": "live"
-      },
       "statusLabel": "Live Tomorrow",
       "statusTone": "live",
-      "platform": "Lichess.org",
+      "platform": "classroom.com",
       "title": "Rahman Friday Rapid Arena",
       "description": "Open to academy students & invited national rated candidates.",
       "format": "Rapid (Swiss 5 Rounds)",
       "timeControl": "10 min + 5 sec inc",
       "dayTime": "Every Friday, 20:00 IST",
-      "action": {
-        "label": "Join on Lichess",
-        "href": "https://lichess.org/tournament",
-        "external": true
-      },
-      "ctaType": "link",
       "ctaLabel": "Join on Lichess",
-      "ctaUrl": "https://lichess.org/tournament",
+      "ctaUrl": "",
       "order": 1,
       "visible": true
     }
   ],
   "gallery": [
     {
-      "id": "post-1",
-      "category": "tournaments",
-      "categoryLabel": "Tournaments",
-      "dateAndType": "14 Oct 2024 • Analysis Dispatch",
-      "dateLabel": "14 Oct 2024",
-      "kicker": "Analysis Dispatch",
-      "title": "Rahman Pupils Sweep Podium at State Youth Rapid",
-      "excerpt": "Detailed tournament report from our 8 junior prodigies who secured gold, silver, and fourth place in Ahmedabad.",
-      "image": "/images/academy/journal-tournaments.svg",
+      "id": "gallery-1",
       "imageUrl": "/images/academy/journal-tournaments.svg",
-      "imagePublicId": "journal-tournaments",
-      "imageAlt": "Junior chess champions tournament analysis",
-      "link": "#",
-      "linkUrl": "#",
-      "cornerPiece": "bishop",
+      "imagePublicId": "gallery-tournaments",
+      "imageAlt": "Rahman Chess Academy online chess class – photo 1",
+      "width": 800,
+      "height": 600,
       "order": 1,
       "visible": true
     },
     {
-      "id": "post-2",
-      "category": "classes",
-      "categoryLabel": "Classes",
-      "dateAndType": "28 Sep 2024 • Repertoire Guide",
-      "dateLabel": "28 Sep 2024",
-      "kicker": "Repertoire Guide",
-      "title": "Dissecting the Tartakower Queen's Gambit Declined",
-      "excerpt": "Key prophylactic pawn moves and hanging pawns management taught in the Advanced Cohort masterclass.",
-      "image": "/images/academy/journal-classes.svg",
+      "id": "post-1",
+      "imageUrl": "https://res.cloudinary.com/npvxsx7y/image/upload/v1794381992/rahman-chess-academy/gallery/vgmt5oe6lcdykkoqkfvm.jpg",
+      "imagePublicId": "rahman-chess-academy/gallery/vgmt5oe6lcdykkoqkfvm",
+      "imageAlt": "Junior chess champions tournament analysis",
+      "order": 1,
+      "visible": true
+    },
+    {
+      "id": "gallery-2",
       "imageUrl": "/images/academy/journal-classes.svg",
-      "imagePublicId": "journal-classes",
-      "imageAlt": "Queen's Gambit masterclass opening board",
-      "link": "#",
-      "linkUrl": "#",
-      "cornerPiece": "knight",
+      "imagePublicId": "gallery-classes",
+      "imageAlt": "Rahman Chess Academy online chess class – photo 2",
+      "width": 800,
+      "height": 600,
       "order": 2,
       "visible": true
     },
     {
-      "id": "post-3",
-      "category": "events",
-      "categoryLabel": "Events",
-      "dateAndType": "10 Sep 2024 • Exhibition",
-      "dateLabel": "10 Sep 2024",
-      "kicker": "Exhibition",
-      "title": "Annual 25-Board Simultaneous Exhibition Highlights",
-      "excerpt": "Watch the full video recap as Super GM Levon played 25 titled aspirants blindfolded on 3 boards.",
-      "image": "/images/academy/journal-events.svg",
+      "id": "post-2",
+      "imageUrl": "https://res.cloudinary.com/npvxsx7y/image/upload/v1794382007/rahman-chess-academy/gallery/zprtyvs7akaqf9guabyf.jpg",
+      "imagePublicId": "rahman-chess-academy/gallery/zprtyvs7akaqf9guabyf",
+      "imageAlt": "Queen's Gambit masterclass opening board",
+      "order": 2,
+      "visible": true
+    },
+    {
+      "id": "gallery-3",
       "imageUrl": "/images/academy/journal-events.svg",
-      "imagePublicId": "journal-events",
+      "imagePublicId": "gallery-events",
+      "imageAlt": "Rahman Chess Academy online chess class – photo 3",
+      "width": 800,
+      "height": 600,
+      "order": 3,
+      "visible": true
+    },
+    {
+      "id": "post-3",
+      "imageUrl": "https://res.cloudinary.com/npvxsx7y/image/upload/v1794382046/rahman-chess-academy/gallery/o8bvnltqsptvhq2v6ug4.png",
+      "imagePublicId": "rahman-chess-academy/gallery/o8bvnltqsptvhq2v6ug4",
       "imageAlt": "Grandmaster simultaneous exhibition match",
-      "link": "#",
-      "linkUrl": "#",
-      "cornerPiece": "bishop",
       "order": 3,
       "visible": true
     }
@@ -195,7 +175,7 @@
       "id": "testimonial-1",
       "stars": 5,
       "rating": 5,
-      "quote": "“My son Aarav increased his FIDE rating by 240 points in just 7 months. The personalized feedback on his openings and the weekly Blitz arenas gave him tremendous psychological composure.”",
+      "quote": "“My son Aarav increased his rating by 240 points in just 7 months. The personalized feedback on his openings and the weekly Blitz arenas gave him tremendous psychological composure.”",
       "author": "Sunita Sharma",
       "name": "Sunita Sharma",
       "role": "Parent of Aarav (U-12 State Champ)",
@@ -211,11 +191,11 @@
       "id": "testimonial-2",
       "stars": 5,
       "rating": 5,
-      "quote": "“GM Elena completely restructured how I perceive endgames. Before Rahman, I lost drawn rook and pawn endings. Now I turn equal positions into full points with surgical prophylaxis.”",
+      "quote": "“Coach Elena completely restructured how I perceive endgames. Before Rahman, I lost drawn rook and pawn endings. Now I turn equal positions into full points with surgical prophylaxis.”",
       "author": "Rohan Iyer",
       "name": "Rohan Iyer",
-      "role": "Candidate Master (FIDE 2085)",
-      "relation": "Candidate Master (FIDE 2085)",
+      "role": "Tournament Player (Rating 2085)",
+      "relation": "Tournament Player (Rating 2085)",
       "cohort": "Student Member",
       "classLabel": "Student Member",
       "consentBadge": "Consent Confirmed",
@@ -240,5 +220,5 @@
       "visible": true
     }
   ],
-  "updatedAt": "2026-11-10T13:32:43.459Z"
+  "updatedAt": "2026-11-11T07:29:59.560Z"
 }

@@ -50,10 +50,7 @@ export const ClassTrackSchema = z.object({
   }),
   ratingLabel: z.string().min(1, "Rating label is required").max(50),
   description: z.string().min(1, "Description is required").max(500),
-  duration: z.string().min(1, "Duration is required").max(50),
-  sessionLength: z.string().min(1, "Session length is required").max(50),
   batchSize: z.string().min(1, "Batch size is required").max(50),
-  schedule: z.string().min(1, "Schedule is required").max(100),
   modules: z.array(z.string().min(1)).min(1, "At least one module required"),
   badge: z.string().max(50).optional().or(z.literal("")),
   perks: z.string().max(150).optional().or(z.literal("")),
@@ -76,6 +73,28 @@ export const CoachProfileSchema = z.object({
   visible: z.boolean().default(true),
 });
 
+const httpsUrlSchema = z
+  .string()
+  .trim()
+  .refine(
+    (val) => {
+      if (!val) return true;
+      const lower = val.toLowerCase();
+      if (lower.startsWith("javascript:") || lower.startsWith("data:")) return false;
+      try {
+        const u = new URL(val);
+        return u.protocol === "https:";
+      } catch {
+        return false;
+      }
+    },
+    {
+      message: "Link must be a valid https:// URL (javascript: and data: links are rejected)",
+    }
+  )
+  .optional()
+  .or(z.literal(""));
+
 export const TournamentEventSchema = z.object({
   id: z.string().min(1, "ID is required"),
   statusLabel: z.string().min(1, "Status label is required").max(50),
@@ -86,27 +105,24 @@ export const TournamentEventSchema = z.object({
   format: z.string().min(1, "Format is required").max(100),
   timeControl: z.string().min(1, "Time control is required").max(50),
   dayTime: z.string().min(1, "Day and time is required").max(100),
-  ctaType: z.enum(["link", "register"]),
-  ctaLabel: z.string().min(1, "CTA label is required").max(50),
-  ctaUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  ctaLabel: z.string().max(50).optional().or(z.literal("")),
+  ctaUrl: httpsUrlSchema,
   order: z.number().default(0),
   visible: z.boolean().default(true),
 });
 
-export const GalleryItemSchema = z.object({
+export const GalleryImageSchema = z.object({
   id: z.string().min(1, "ID is required"),
-  category: z.enum(["classes", "tournaments", "events"]),
   imageUrl: z.string().min(1, "Image URL is required"),
-  imagePublicId: z.string().min(1, "Image Public ID is required"),
-  imageAlt: z.string().min(1, "Image Alt text is required").max(150),
-  dateLabel: z.string().min(1, "Date is required").max(50),
-  kicker: z.string().min(1, "Kicker is required").max(50),
-  title: z.string().min(1, "Title is required").max(120),
-  excerpt: z.string().min(1, "Excerpt is required").max(400),
-  linkUrl: z.string().max(300).optional().or(z.literal("")),
+  imagePublicId: z.string().optional().or(z.literal("")),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  imageAlt: z.string().max(200).optional().or(z.literal("")),
   order: z.number().default(0),
   visible: z.boolean().default(true),
 });
+
+export const GalleryItemSchema = GalleryImageSchema;
 
 export const TestimonialItemSchema = z.object({
   id: z.string().min(1, "ID is required"),

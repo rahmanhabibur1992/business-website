@@ -1,121 +1,283 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
-import { HoverCard } from "./HoverCard";
-import { JOURNAL_POSTS, JournalPost } from "@/lib/academy-content";
+import { GALLERY_DATA, GalleryImage } from "@/lib/academy-content";
 
 interface GallerySectionProps {
-  posts?: JournalPost[];
+  images?: GalleryImage[];
+  posts?: GalleryImage[];
 }
 
-export function GallerySection({ posts = JOURNAL_POSTS }: GallerySectionProps) {
-  const [filter, setFilter] = useState<string>("all");
-  const visiblePosts = posts.filter((p) => p.visible !== false);
+export function GallerySection({ images, posts }: GallerySectionProps) {
+  // Support either images or posts prop for backwards-compatibility
+  const rawList: GalleryImage[] = images || posts || GALLERY_DATA;
+  const visibleImages = rawList.filter((img) => img.visible !== false);
+  const count = visibleImages.length;
 
-  const filteredPosts =
-    filter === "all"
-      ? visiblePosts
-      : visiblePosts.filter((post) => post.category === filter);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const lightboxRef = useRef<HTMLDivElement | null>(null);
+  const closeBtnRef = useRef<HTMLButtonElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  const isOpen = lightboxIndex !== null && count > 0;
+  const currentImage = isOpen ? visibleImages[lightboxIndex] : null;
+
+  const openLightbox = (index: number) => {
+    triggerRef.current = document.activeElement as HTMLElement;
+    setLightboxIndex(index);
+  };
+
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null);
+    setTimeout(() => {
+      triggerRef.current?.focus();
+    }, 50);
+  }, []);
+
+  const showNext = useCallback(() => {
+    setLightboxIndex((prev) => (prev !== null ? (prev + 1) % count : 0));
+  }, [count]);
+
+  const showPrev = useCallback(() => {
+    setLightboxIndex((prev) => (prev !== null ? (prev - 1 + count) % count : count - 1));
+  }, [count]);
+
+  // Body scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      closeBtnRef.current?.focus();
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
+  // Keyboard navigation & Focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeLightbox();
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        showNext();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        showPrev();
+        return;
+      }
+
+      // Simple focus trap inside lightbox
+      if (e.key === "Tab" && lightboxRef.current) {
+        const focusables = lightboxRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length > 0) {
+          const first = focusables[0];
+          const last = focusables[focusables.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, closeLightbox, showNext, showPrev]);
+
+  // Touch swipe support
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        showNext();
+      } else {
+        showPrev();
+      }
+    }
+  };
 
   return (
     <section
       id="gallery"
-      className="w-full py-20 px-4 lg:px-12 border-b border-outline-subtle bg-surface scroll-mt-20"
+      className="w-full py-20 px-4 lg:px-12 border-b border-outline-subtle bg-surface scroll-mt-24"
     >
-      <div id="journal" className="max-w-7xl mx-auto flex flex-col gap-12 scroll-mt-20">
-        {/* Section Header & Filters */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="flex flex-col gap-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-              <span>Academy Gallery &amp; Journal</span>
-            </div>
-            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-on-surface">
-              Dispatches from the 64 Squares
-            </h2>
-            <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-              Grandmaster game annotations, student tournament breakthroughs, masterclass syllabus highlights, and academy events.
-            </p>
+      <div className="max-w-7xl mx-auto flex flex-col gap-10">
+        {/* Section Header */}
+        <div className="flex flex-col gap-3 max-w-2xl">
+          <div className="inline-flex items-center gap-2 text-primary font-mono text-xs uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+            <span>Academy Moments</span>
           </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
-            {["all", "classes", "tournaments", "events"].map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setFilter(cat)}
-                className={`px-3 py-1.5 rounded transition-all capitalize cursor-pointer ${
-                  filter === cat
-                    ? "bg-primary text-on-primary font-bold shadow-[0_0_12px_rgba(242,202,80,0.25)]"
-                    : "bg-surface-high border border-outline-subtle text-on-surface-variant hover:text-on-surface hover:border-primary/40"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-on-surface">
+            Gallery
+          </h2>
+          <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+            Inside our interactive cohorts, online simul arenas, and student tactical analysis sessions.
+          </p>
         </div>
 
-        {/* 3-Column Journal / Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post) => {
-            const imgSrc = post.imageUrl || post.image || "/coaches/coach-levon.webp";
-            const dateText = post.dateAndType || `${post.dateLabel || ""} • ${post.kicker || post.category}`;
-            const cornerPiece = post.cornerPiece || (post.category === "classes" ? "knight" : "bishop");
-            const linkHref = post.linkUrl || post.link || "#";
+        {/* Gallery Grid */}
+        {count === 0 ? (
+          <div className="py-16 text-center border border-dashed border-outline-subtle rounded-2xl bg-surface-low/30 max-w-md mx-auto w-full">
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant/60 mb-2">
+              photo_library
+            </span>
+            <p className="font-mono text-sm text-on-surface-variant">Photos coming soon.</p>
+          </div>
+        ) : (
+          <div
+            className={`grid gap-4 sm:gap-6 ${
+              count === 1
+                ? "grid-cols-1 max-w-md mx-auto w-full"
+                : count === 2
+                ? "grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto w-full"
+                : "grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
+            }`}
+          >
+            {visibleImages.map((img, idx) => {
+              const alt =
+                img.imageAlt || `Rahman Chess Academy online chess class – photo ${idx + 1}`;
 
-            return (
-              <HoverCard
-                key={post.id}
-                cornerPiece={cornerPiece}
-                className="bg-surface-low rounded-xl border border-outline-subtle overflow-hidden flex flex-col justify-between"
-              >
-                <div>
-                  {/* Article Thumbnail */}
-                  <div className="relative w-full aspect-[16/10] bg-surface-container overflow-hidden">
-                    <Image
-                      src={imgSrc}
-                      alt={post.imageAlt || post.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="object-cover hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-surface-low via-transparent to-transparent" />
-                    <span className="absolute top-3 left-3 px-2 py-0.5 rounded bg-surface-lowest/85 backdrop-blur-sm border border-outline-subtle text-secondary font-mono text-[10px] uppercase tracking-wider">
-                      {post.category}
+              return (
+                <button
+                  key={img.id || idx}
+                  type="button"
+                  onClick={() => openLightbox(idx)}
+                  aria-label={`View photo ${idx + 1} of ${count}`}
+                  className="group relative aspect-[4/3] rounded-xl border border-outline-subtle bg-surface-low overflow-hidden hover:border-primary transition-all duration-300 hover:scale-[1.02] cursor-pointer shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface text-left"
+                >
+                  <Image
+                    src={img.imageUrl}
+                    alt={alt}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    loading="lazy"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                    <span className="material-symbols-outlined text-white text-lg drop-shadow">
+                      zoom_in
                     </span>
                   </div>
-
-                  {/* Article Content */}
-                  <div className="p-6 space-y-3 relative z-10">
-                    <div className="text-[11px] font-mono text-on-surface-variant">
-                      {dateText}
-                    </div>
-                    <h3 className="font-display text-lg font-bold text-on-surface leading-snug line-clamp-2">
-                      {post.title}
-                    </h3>
-                    <p className="text-xs text-on-surface-variant leading-relaxed line-clamp-3">
-                      {post.excerpt}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="px-6 pb-6 pt-2 relative z-10">
-                  <a
-                    href={linkHref}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono text-primary font-bold hover:underline"
-                  >
-                    <span>Read Dispatch</span>
-                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                  </a>
-                </div>
-              </HoverCard>
-            );
-          })}
-        </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      {/* Accessible Lightbox Modal */}
+      {isOpen && currentImage && (
+        <div
+          ref={lightboxRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo gallery lightbox"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* Top Bar: Counter & Close Button */}
+          <div className="w-full max-w-6xl flex items-center justify-between text-on-surface z-10 py-2">
+            <span className="font-mono text-xs sm:text-sm text-on-surface-variant font-bold tracking-wider">
+              {lightboxIndex + 1} / {count}
+            </span>
+            <button
+              ref={closeBtnRef}
+              type="button"
+              aria-label="Close lightbox"
+              onClick={closeLightbox}
+              className="p-2 rounded-lg bg-surface-high hover:bg-surface-highest text-on-surface hover:text-primary transition-colors cursor-pointer flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <span className="material-symbols-outlined text-2xl">close</span>
+            </button>
+          </div>
+
+          {/* Central Image with Navigation */}
+          <div className="relative w-full max-w-5xl flex-1 flex items-center justify-center py-2 min-h-0">
+            {/* Prev Button */}
+            {count > 1 && (
+              <button
+                type="button"
+                aria-label="Previous image"
+                onClick={showPrev}
+                className="absolute left-2 sm:left-4 z-20 p-2.5 sm:p-3 rounded-full bg-surface-lowest/80 hover:bg-surface border border-outline-subtle text-on-surface hover:text-primary transition-all cursor-pointer shadow-xl backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="material-symbols-outlined text-2xl sm:text-3xl">
+                  chevron_left
+                </span>
+              </button>
+            )}
+
+            {/* Next/Image Render with Cloudinary Width/Height */}
+            <div className="relative max-h-full max-w-full flex items-center justify-center">
+              <Image
+                src={currentImage.imageUrl}
+                alt={
+                  currentImage.imageAlt ||
+                  `Rahman Chess Academy online chess class – photo ${lightboxIndex + 1}`
+                }
+                width={currentImage.width || 1200}
+                height={currentImage.height || 900}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                loading="lazy"
+                priority={false}
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-xl shadow-2xl border border-outline-subtle/40"
+              />
+            </div>
+
+            {/* Next Button */}
+            {count > 1 && (
+              <button
+                type="button"
+                aria-label="Next image"
+                onClick={showNext}
+                className="absolute right-2 sm:right-4 z-20 p-2.5 sm:p-3 rounded-full bg-surface-lowest/80 hover:bg-surface border border-outline-subtle text-on-surface hover:text-primary transition-all cursor-pointer shadow-xl backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <span className="material-symbols-outlined text-2xl sm:text-3xl">
+                  chevron_right
+                </span>
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Caption / Alt Text */}
+          <div className="w-full max-w-3xl text-center py-2 z-10">
+            <p className="text-xs sm:text-sm text-on-surface-variant font-mono truncate px-4">
+              {currentImage.imageAlt ||
+                `Rahman Chess Academy online chess class – photo ${lightboxIndex + 1}`}
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

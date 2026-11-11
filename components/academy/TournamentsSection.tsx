@@ -2,15 +2,26 @@
 
 import React from "react";
 import { HoverCard } from "./HoverCard";
-import { useEnquiryModal } from "./EnquiryContext";
 import { TOURNAMENTS_DATA, TournamentEvent } from "@/lib/academy-content";
 
 interface TournamentsSectionProps {
   tournaments?: TournamentEvent[];
 }
 
+function isValidHttpsUrl(urlString?: string): boolean {
+  if (!urlString) return false;
+  const trimmed = urlString.trim();
+  const lower = trimmed.toLowerCase();
+  if (lower.startsWith("javascript:") || lower.startsWith("data:")) return false;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 export function TournamentsSection({ tournaments = TOURNAMENTS_DATA }: TournamentsSectionProps) {
-  const { openModal } = useEnquiryModal();
   const visibleTournaments = tournaments.filter((t) => t.visible !== false);
   const count = visibleTournaments.length;
 
@@ -30,11 +41,11 @@ export function TournamentsSection({ tournaments = TOURNAMENTS_DATA }: Tournamen
             Rated Arena Battles &amp; Master Analysis
           </h2>
           <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
-            Every student competes in regular rated online arenas with live GM commentary, engine analysis briefs, and FIDE-style psychological pressure training.
+            Every student competes in regular rated online arenas with live Master commentary, engine analysis briefs, and competitive psychological pressure training.
           </p>
         </div>
 
-        {/* Adaptive Tournaments Grid */}
+        {/* Adaptive Tournaments Grid (1 centered, 2 split, 3+ grid) */}
         <div
           className={`grid gap-8 ${
             count === 1
@@ -47,15 +58,15 @@ export function TournamentsSection({ tournaments = TOURNAMENTS_DATA }: Tournamen
           {visibleTournaments.map((evt) => {
             const statusLabel = evt.statusLabel || evt.statusBadge?.label || "Online Arena";
             const statusTone = evt.statusTone || evt.statusBadge?.style || "live";
-            const ctaType = evt.ctaType || (evt.action?.href ? "link" : "register");
-            const ctaLabel = evt.ctaLabel || evt.action?.label || "Register Seat";
-            const ctaUrl = evt.ctaUrl || evt.action?.href;
+            const hasValidLink = isValidHttpsUrl(evt.ctaUrl);
+            const buttonLabel = evt.ctaLabel?.trim() || "Join Event";
+            const safeUrl = evt.ctaUrl?.trim() || "";
 
             return (
               <HoverCard
                 key={evt.id}
                 cornerPiece="rook"
-                className="bg-surface rounded-xl p-6 sm:p-8 border border-outline-subtle flex flex-col justify-between gap-6"
+                className="bg-surface rounded-xl p-6 sm:p-8 border border-outline-subtle flex flex-col justify-between h-full"
               >
                 <div className="flex flex-col gap-4 relative z-10">
                   {/* Status & Platform */}
@@ -106,34 +117,20 @@ export function TournamentsSection({ tournaments = TOURNAMENTS_DATA }: Tournamen
                   </div>
                 </div>
 
-                {/* Action CTA */}
-                <div className="pt-2 relative z-10">
-                  {ctaType === "link" && ctaUrl ? (
+                {/* Optional Link CTA Button - rendered ONLY when a valid https URL exists */}
+                {hasValidLink && (
+                  <div className="pt-4 mt-auto relative z-10">
                     <a
-                      href={ctaUrl}
+                      href={safeUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-full py-2.5 bg-primary text-on-primary font-mono text-xs uppercase tracking-wider font-bold rounded hover:opacity-90 transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(242,202,80,0.2)]"
                     >
-                      <span>{ctaLabel}</span>
+                      <span>{buttonLabel}</span>
                       <span className="material-symbols-outlined text-base">open_in_new</span>
                     </a>
-                  ) : (
-                    <button
-                      type="button"
-                      className="w-full py-2.5 bg-surface-high border border-outline-subtle hover:border-primary text-on-surface hover:text-primary font-mono text-xs uppercase tracking-wider font-bold rounded transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-                      onClick={(e) =>
-                        openModal(
-                          `tournament-${evt.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}`,
-                          e.currentTarget
-                        )
-                      }
-                    >
-                      <span>{ctaLabel}</span>
-                      <span className="material-symbols-outlined text-base">arrow_forward</span>
-                    </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </HoverCard>
             );
           })}

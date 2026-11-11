@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["firebase-admin"],
+  cacheComponents: true,
   /* config options here */
   experimental: {
     agentFeedback: true,
   },
-  cacheComponents: true,
+
   partialPrefetching: true,
   images: {
     remotePatterns: [

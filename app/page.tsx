@@ -19,14 +19,14 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://rahmanchess.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+  title: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
   description:
-    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Grandmaster apprenticeships. 100% Online.",
+    "Elite international pedagogical institution providing structured FIDE titled development, neural engine training, and Master apprenticeships. 100% Online.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+    title: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
     description:
       "Structured syllabi from basic pawn fundamentals to master-level prophylactic calculations. Personalized 1-on-1 coaching, weekend Blitz arena tournaments, and engine-augmented review. 100% Online.",
     url: siteUrl,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "RAHMAN CHESS ACADEMY | Grandmaster Mentorship & FIDE Apprenticeship",
+    title: "RAHMAN CHESS ACADEMY | Master Mentorship & FIDE Apprenticeship",
     description:
       "Structured syllabi from basic pawn fundamentals to master-level prophylactic calculations. Personalized 1-on-1 coaching, weekend Blitz arena tournaments, and engine-augmented review. 100% Online.",
   },
@@ -82,7 +82,7 @@ export default async function HomePage() {
       ...content.coaches.map((coach) => ({
         "@type": "Person",
         name: coach.name,
-        jobTitle: coach.roleLine || coach.role,
+        jobTitle: "Chess Master",
         image: coach.imageUrl || coach.image,
         worksFor: {
           "@type": "EducationalOrganization",
@@ -112,7 +112,7 @@ export default async function HomePage() {
           />
           <CoachesSection coaches={content.coaches} />
           <TournamentsSection tournaments={content.tournaments} />
-          <GallerySection posts={content.gallery} />
+          <GallerySection images={content.gallery} />
           <TestimonialsSection testimonials={content.testimonials} />
           <ProcessSection />
         </main>

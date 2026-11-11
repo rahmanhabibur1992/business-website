@@ -29,7 +29,7 @@ export function ChessScrollRail() {
   useEffect(() => {
     updateRidingPosition();
 
-    if (activeRankIdx === 7 && ridingPieceRef.current) {
+    if (activeRankIdx === TRACKED_SECTIONS.length - 1 && ridingPieceRef.current) {
       ridingPieceRef.current.classList.add("promote-pop");
       const timer = setTimeout(() => {
         ridingPieceRef.current?.classList.remove("promote-pop");
@@ -45,21 +45,24 @@ export function ChessScrollRail() {
 
   return (
     <>
-      {/* MOBILE HORIZONTAL PROGRESS BAR (<1024px) */}
+      {/* MOBILE HORIZONTAL PROGRESS BAR (<1024px) - sits flush under header with its own 20px strip */}
       <div
         aria-hidden="true"
-        className="lg:hidden fixed top-20 left-0 w-full h-1 bg-[var(--rail-ink-line)] z-30 pointer-events-none"
+        className="lg:hidden fixed left-0 w-full h-5 bg-surface-lowest/90 backdrop-blur-md border-b border-outline-subtle/50 z-30 pointer-events-none flex items-center px-2"
+        style={{ top: "var(--header-h, 4rem)" }}
       >
-        <div
-          id="mobile-progress-bar"
-          className="h-full bg-[var(--chess-accent)] relative transition-all duration-150"
-          style={{ width: `${Math.max(10, progressFraction * 100)}%` }}
-        >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 text-[var(--chess-accent)] filter drop-shadow">
-            <ChessPiece
-              piece={isMobilePromoted ? "queen" : "pawn"}
-              className="w-full h-full"
-            />
+        <div className="relative w-full h-[2px] bg-[var(--rail-ink-line)]">
+          <div
+            id="mobile-progress-bar"
+            className="h-full bg-[var(--chess-accent)] relative transition-all duration-150"
+            style={{ width: `${Math.max(4, Math.min(100, progressFraction * 100))}%` }}
+          >
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-4 h-4 text-[var(--chess-accent)] filter drop-shadow flex items-center justify-center">
+              <ChessPiece
+                piece={isMobilePromoted ? "queen" : "pawn"}
+                className="w-3.5 h-3.5"
+              />
+            </div>
           </div>
         </div>
       </div>

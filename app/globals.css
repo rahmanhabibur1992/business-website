@@ -2,6 +2,7 @@
 
 :root {
   color-scheme: dark;
+  --header-h: 4rem;
   --bg-body: #0c0e14;
   --bg-surface: #111319;
   --bg-surface-dim: #0c0e14;
@@ -33,6 +34,12 @@
   --font-heading: var(--font-display);
   --font-manrope: var(--font-body);
   --font-label: var(--font-mono);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --header-h: 5rem;
+  }
 }
 
 @theme {

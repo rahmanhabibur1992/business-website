@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Rahman Chess Academy - Grandmaster Mentorship";
+export const alt = "Rahman Chess Academy - Master Mentorship";
 export const size = {
   width: 1200,
   height: 630,
@@ -75,7 +75,7 @@ export default async function Image() {
               lineHeight: 1.1,
             }}
           >
-            Master the 64 Squares with Grandmasters.
+            Master the 64 Squares with a Master.
           </div>
           <div
             style={{
@@ -84,7 +84,7 @@ export default async function Image() {
               maxWidth: "900px",
             }}
           >
-            FIDE-titled curriculum, 1-on-1 Grandmaster mentorship, and weekly rated arena praxis. 100% Online Worldwide.
+            Structured curriculum, 1-on-1 Master mentorship, and weekly rated arena praxis. 100% Online Worldwide.
           </div>
         </div>
 
