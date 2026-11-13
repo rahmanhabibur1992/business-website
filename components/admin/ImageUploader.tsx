@@ -139,7 +139,7 @@ export function ImageUploader({
               src={value}
               alt="Uploaded preview"
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="80px"
             />
           </div>

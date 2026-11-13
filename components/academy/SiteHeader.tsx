@@ -124,7 +124,7 @@ export function SiteHeader() {
             <span className="material-symbols-outlined text-base">calendar_month</span>
             <span>
               <span className="sm:hidden">Book</span>
-              <span className="hidden sm:inline">Book Assessment</span>
+              <span className="hidden sm:inline">CLASS ROOM</span>
             </span>
           </Link>
 

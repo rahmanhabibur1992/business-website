@@ -67,18 +67,19 @@ export function CoachesSection({ coaches = COACHES_DATA }: CoachesSectionProps) 
                 className="bg-surface-low rounded-xl border border-outline-subtle overflow-hidden flex flex-col"
               >
                 {/* Coach Portrait */}
-                <div className="relative w-full aspect-[4/3] bg-surface-container overflow-hidden">
+                <div className="relative w-full bg-surface-container flex items-center justify-center overflow-hidden">
                   <Image
                     src={imgSrc}
                     alt={coach.imageAlt || `${coach.name} - Chess Master`}
-                    fill
+                    width={720}
+                    height={1280}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover object-top hover:scale-105 transition-transform duration-500"
+                    className="w-full h-auto object-contain"
+                    priority={count === 1}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface-low via-surface-low/30 to-transparent" />
 
                   {/* Badges Over Image */}
-                  <div className="absolute top-3 left-3 flex items-center gap-2 font-mono text-[11px]">
+                  <div className="absolute top-3 left-3 flex items-center gap-2 font-mono text-[11px] z-10">
                     <span className="px-2.5 py-1 rounded bg-surface-lowest/85 backdrop-blur-sm border border-outline-subtle text-primary font-bold">
                       {coach.peakRating}
                     </span>
